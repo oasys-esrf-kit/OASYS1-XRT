@@ -99,20 +99,17 @@ import numpy as np
 from xrt.backends.raycing import BeamLine
 from xrt.backends.raycing.oes import DoubleParaboloidLens
 from xrt.backends.raycing.materials import Material
-
-    
-xrt_component = DoubleParaboloidLens(
+component = DoubleParaboloidLens(
     bl=BeamLine(),
     name='{name}',
-    center='center',
+    center={center},
     pitch={pitch},
     material={material},
     t={t},
     focus={focus}, # lens focus f=R/2
     nCRL={nCRL},
     zmax={zmax},
-    )
-                             
+    )                             
 """
 
 

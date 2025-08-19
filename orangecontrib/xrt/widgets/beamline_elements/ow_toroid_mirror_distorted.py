@@ -101,11 +101,9 @@ class OWToridMirrorDistorted(OWOpticalElement):
 """
 import numpy as np
 from xrt.backends.raycing import BeamLine
-from id09_xrt import ToroidMirrorDistorted
+from orangecontrib.xrt.util.id09_xrt import ToroidMirrorDistorted
 from xrt.backends.raycing.materials import Material
-
-    
-xrt_component = ToroidMirrorDistorted(
+component = ToroidMirrorDistorted(
     distorsion_factor=1,
     bl=BeamLine(),
     name='{name}',
@@ -117,8 +115,7 @@ xrt_component = ToroidMirrorDistorted(
     yaw={yaw},
     limPhysX={limPhysX},
     limPhysY={limPhysY},
-    )
-                             
+    )              
 """
 
 

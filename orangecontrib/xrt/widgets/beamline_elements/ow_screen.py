@@ -50,12 +50,11 @@ class OWScreen(OWOpticalElement):
 """
 from xrt.backends.raycing import BeamLine
 from xrt.backends.raycing.screens import Screen
-xrt_component = Screen(
+component = Screen(
     BeamLine(),
     name="{name}",
     center={center},
     )
-
 """
 
     def send_data(self):

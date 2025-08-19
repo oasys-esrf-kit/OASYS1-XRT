@@ -64,13 +64,11 @@ class OWRectangularAperture(OWOpticalElement):
 """
 from xrt.backends.raycing import BeamLine
 from xrt.backends.raycing.apertures import RectangularAperture
-
-xrt_component = RectangularAperture(BeamLine(),
+component = RectangularAperture(BeamLine(),
     name='{name}',
     center={center},
     kind=('left', 'right', 'bottom', 'top'),
-    opening=[-{phg}/2, {phg}/2, -{pvg}/2, {pvg}/2])
-                             
+    opening=[-{phg}/2, {phg}/2, -{pvg}/2, {pvg}/2])                
 """
 
 

@@ -1,6 +1,7 @@
 import sys
 from PyQt5.QtGui import QPalette, QColor, QFont
 from PyQt5.QtWidgets import QApplication, QFileDialog
+from PyQt5.QtWidgets import QLabel, QApplication, QMessageBox, QSizePolicy
 from PyQt5.QtCore import QRect
 from PyQt5.QtGui import QTextCursor
 
@@ -35,7 +36,7 @@ class DiagonalizePythonScript(widget.OWWidget):
                 "doc":"XRT Data",
                 "id":"data"}]
 
-    beamline_name = Setting("my_beamline")
+    beamline_name = Setting("my_xrt_beamline")
     repetition = Setting(3)
 
     screens_to_plot = Setting("['sample_screen']")
@@ -113,7 +114,7 @@ class DiagonalizePythonScript(widget.OWWidget):
         ###
         gen_box = oasysgui.widgetBox(self.controlArea, "Main", addSpace=False, orientation="vertical", width=self.CONTROL_AREA_WIDTH-5)
 
-        oasysgui.lineEdit(gen_box, self, "beamline_name", "Beamline name", labelWidth=150, valueType=int,
+        oasysgui.lineEdit(gen_box, self, "beamline_name", "Beamline name", labelWidth=150, valueType=str,
                           orientation="horizontal", callback=self.refresh_script)
         oasysgui.lineEdit(gen_box, self, "repetition", "Number of repetitions", labelWidth=250, valueType=int,
                           orientation="horizontal", callback=self.refresh_script)
@@ -232,20 +233,15 @@ class DiagonalizePythonScript(widget.OWWidget):
         self.wofry_output.setTextCursor(cursor)
         self.wofry_output.ensureCursorVisible()
 
-    def to_python_code(self,
-                       ):
+    def to_python_code(self):
 
-
-        if self.input_data is None: self.input_data = XRTData()
-
-        # print(">>>>>>>>>>>>>>>>>>", self.oasys_xrt_components_code_old())
-
-        # print(">>>>>>>>>>>>>>>>>>", self.oasys_xrt_components_code())
+        if self.input_data is None: return "# << ERROR No XRDData >>"
 
         code_parameters = {
-            "name": self.beamline_name,
+            "beamline_name": self.beamline_name,
             "REPETITION": self.repetition,
-            "oasys_xrt_components_code": self.oasys_xrt_components_code(),
+            "build_beamline_code": self.build_beamline_code(),
+            "run_process_code": self.run_process_code(),
             "screens_to_plot": self.screens_to_plot,
             "sizes_in_um": self.sizes_in_um,
                 }
@@ -254,177 +250,158 @@ class DiagonalizePythonScript(widget.OWWidget):
         full_text_code = template_code.format_map(code_parameters)
         return full_text_code
 
-    def oasys_xrt_components_code(self):
-        txt = "\n"
+    def build_beamline_code(self):
         indent = "    "
-
-        txt += "def oasys_xrt_components_code():\n"
+        txt = ""
+        txt += "def build_beamline(name='', force_beam=True):\n"
         txt += "\n"
-        txt += indent + "oasys_list_of_elements = []\n"
+        txt += indent + "from xrt.backends.raycing import BeamLine\n"
+        txt += indent + "bl = BeamLine()\n"
+        txt += indent + "bl.name = name\n"
         txt += "\n"
 
-        if self.input_data is None: self.input_data = XRTData()
+        if self.input_data is None:
+            txt += indent + "## ERROR No XRTData available ##\n"
+            return txt
 
         for i in range(self.input_data.number_of_components()):
             txt_i = self.input_data.component(i)
+            txt_i_indented = "\n".join(indent + line for line in txt_i.splitlines())
+
+            txt += "\n"
             txt += indent + "#\n"
             txt += indent + "# Component index: %d\n" % i
             txt += indent + "#\n"
-            txt += indent + "oasys_list_of_elements.append('''%s''')\n" % txt_i
+            txt += txt_i_indented
+            txt += "\n"
+            txt += indent + "setattr(bl, component.name, component)\n"
 
+        txt += "\n"
         txt += indent + "#\n"
-        txt += indent + "return oasys_list_of_elements\n"
+        txt += indent + "#\n"
+        txt += indent + "#\n"
+        txt += indent + "return bl\n"
 
         return txt
 
-    def oasys_xrt_components_code_old(self):
-        return """
-def oasys_xrt_components_code():
+    def run_process_code(self):
+        indent = "    "
+        txt = ""
+        txt += "def run_process(bl):\n"
+        txt += "\n"
+        txt += indent + "import numpy as np\n"
+        txt += indent + "global REPETITION\n"
+        txt += indent + "global dump_beams_folder, dump_beams_flag\n"
+        txt += indent + "print('REPETITION = %d' % REPETITION)\n"
+        txt += indent + "t0 = time.time()\n"
+        txt += "\n"
+        txt += indent + "beam_at_screens = dict()\n"
 
-    oasys_list_of_elements = []
+        if self.input_data is None:
+            txt += indent + "## ERROR No XRTData available ##\n"
+            return txt
 
-    oasys_list_of_elements.append('''
-from xrt.backends.raycing import BeamLine
-from xrt.backends.raycing.sources import Undulator
+        for i in range(self.input_data.number_of_components()):
+            txt_i = self.input_data.component(i)
+            namespace = dict()
+            try:
+                exec(txt_i, namespace)
+                component = namespace["component"]
 
-xrt_component = Undulator(
-    BeamLine(),
-    name="u17",
-    center=[0,1250,0],
-    period=17,
-    n=117,
-    eE=6.0,
-    eI=0.2,
-    eEpsilonX=0.130,
-    eEpsilonZ=0.010,
-    eEspread=9.4e-4,
-    eSigmaX=30.0,
-    eSigmaZ=5.2,
-    distE="eV",
-    targetE=[18070.0, 1],
-    eMin=17000.0,
-    eMax=18500.0,
-    nrays=20000,
-    )
-''')
+                txt += "\n"
+                txt += indent + "#\n"
+                txt += indent + "# Component index: %d (%s)\n" % (i, component.name)
+                txt += indent + "#\n"
+                #
+                # needs local access to components... TO BE UPDATED!
+                #
+                from xrt.backends.raycing.sources import Undulator
+                from xrt.backends.raycing.screens import Screen
+                from xrt.backends.raycing.oes import Plate
+                from xrt.backends.raycing.apertures import RectangularAperture
+                from orangecontrib.xrt.util.id09_xrt import ToroidMirrorDistorted
+                from xrt.backends.raycing.oes import DoubleParaboloidLens
 
-    oasys_list_of_elements.append('''
+                if isinstance(component, Undulator):
+                    txt += indent +  "component = bl.%s\n" % component.name
+                    txt += indent +  "beam = component.shine()\n"
+                    txt += indent +  'if dump_beams_flag: np.save("%s%s_%02d.npy" % (dump_beams_folder, component.name, REPETITION), beam)\n'
+                elif isinstance(component, Screen):
+                    txt += indent +  "component = bl.%s\n" % component.name
+                    txt += indent +  "beam_at_screen = component.expose(beam)\n"
+                    txt += indent +  "beam_at_screens[component.name] = beam_at_screen\n"
+                    txt += indent +  'if dump_beams_flag: np.save("%s%s_%02d.npy" % (dump_beams_folder, component.name, REPETITION), beam)\n'
+                elif isinstance(component, DoubleParaboloidLens):
+                    txt += indent +  "component = bl.%s\n" % component.name
+                    txt += indent +  "beam, _, _ = component.multiple_refract(beam) # WARNING: NOT STANDARD: output beam is returned!! \n"
+                    txt += indent +  'if dump_beams_flag: np.save("%s%s_%02d.npy" % (dump_beams_folder, component.name, REPETITION), beam)\n'
+                elif isinstance(component, Plate):
+                    txt += indent +  "component = bl.%s\n" % component.name
+                    txt += indent +  "_, _, _ = component.double_refract(beam)\n"
+                    txt += indent +  'if dump_beams_flag: np.save("%s%s_%02d.npy" % (dump_beams_folder, component.name, REPETITION), beam)\n'
+                elif isinstance(component, RectangularAperture):
+                    txt += indent +  "component = bl.%s\n" % component.name
+                    txt += indent +  "_ = component.propagate(beam)\n"
+                    txt += indent +  'if dump_beams_flag: np.save("%s%s_%02d.npy" % (dump_beams_folder, component.name, REPETITION), beam)\n'
+                elif isinstance(component, ToroidMirrorDistorted):
+                    txt += indent +  "component = bl.%s\n" % component.name
+                    txt += indent +  "beam, _ = component.reflect(beam) # WARNING: NOT STANDARD: output beam is returned!!\n"
+                    txt += indent +  'if dump_beams_flag: np.save("%s%s_%02d.npy" % (dump_beams_folder, component.name, REPETITION), beam)\n'
 
-from xrt.backends.raycing import BeamLine
-from xrt.backends.raycing.screens import Screen
 
-xrt_component = Screen(
-    BeamLine(),
-    name="sample_screen",
-    center=[0, 56289, 0],
-    )
-''')
+                else:
+                    txt += indent +  "# <<<ERROR>>> not implemented component.\n"
+            except Exception as exception:
+                QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
+                if self.IS_DEVELOP: raise exception
 
-    return oasys_list_of_elements
-"""
+
+
+            # txt_i_indented = "\n".join(indent + line for line in txt_i.splitlines())
+            #
+            # txt += "\n"
+            # txt += indent + "#\n"
+            # txt += indent + "# Component index: %d\n" % i
+            # txt += indent + "#\n"
+            # txt += txt_i_indented
+            # txt += "\n"
+            # txt += indent + "setattr(bl, component.name, component)\n"
+
+        txt += "\n"
+
+        txt += indent + "#\n"
+        txt += indent + "#\n"
+        txt += indent + "#\n"
+        txt += indent + 'dt = time.time() - t0\n'
+        txt += indent + 'print("Time needed to create source and trace system %.3f sec" % dt)\n'
+        txt += indent + 'REPETITION += 1\n'
+        txt += indent + "return beam_at_screens\n"
+
+        return txt
+
+
 
     def get_template_code(self):
         return """
 import os
 import time
-import copy
 import numpy as np
 from scipy.signal import savgol_filter
 import xrt
 
 from xrt.backends.raycing import BeamLine
-from xrt.backends.raycing.sources import Undulator
-from xrt.backends.raycing.screens import Screen
-from xrt.backends.raycing.oes import Plate
-from xrt.backends.raycing.apertures import RectangularAperture
-from id09_xrt import ToroidMirrorDistorted
-from xrt.backends.raycing.oes import DoubleParaboloidLens
-
 from xrt.plotter import XYCAxis, XYCPlot
 from xrt.runner import run_ray_tracing
 
 #
-# !!!! HERE THE FUNCTION oasys_xrt_components_code() !!!!!!
+# build_beamline_code
 #
-{oasys_xrt_components_code}
+{build_beamline_code}
 
-
-def oasys_xrt_components_objects(oasys_list_of_elements):
-    # run components to get xrt objects
-    oasys_list_of_elements_objects = []
-    for i in range(len(oasys_list_of_elements)):
-        code = oasys_list_of_elements[i]
-        namespace = dict()
-        exec(code, namespace)
-        element = namespace["xrt_component"]
-        oasys_list_of_elements_objects.append(element)
-    return  oasys_list_of_elements_objects
-
-def build_beamline(name=""):
-    list_of_components_code = oasys_xrt_components_code()
-    list_of_components_objects = oasys_xrt_components_objects(list_of_components_code)
-
-    # add to bl
-    bl = BeamLine()
-    bl.name = name
-
-    for element in list_of_components_objects:
-        setattr(bl, element.name, element)
-
-    bl.list_of_elements = list_of_components_code
-    bl.list_of_elements_objects  = list_of_components_objects
-
-    return bl
-
-def run_process(bl):
-    global REPETITION, dump_beams_folder, dump_beams_flag
-    print("REPETITION = %d" % REPETITION)
-    t0 = time.time()
-
-    beam_out = dict()
-    screen_out = dict()
-    beam_out_list = []
-
-    for i, element in enumerate(bl.list_of_elements_objects):
-        if isinstance(element, Undulator):
-            beam_out_i = element.shine()
-            beam_out[element.name] = beam_out_i
-            beam_out_list.append(beam_out_i)
-        elif isinstance(element, Screen):
-            beam_out_i = copy.deepcopy(beam_out_list[i-1])
-            screen_i = element.expose(beam_out_i)
-            beam_out[element.name] = beam_out_i
-            screen_out[element.name] = screen_i
-            beam_out_list.append(beam_out_i)
-        elif isinstance(element, RectangularAperture):
-            beam_out_i = copy.deepcopy(beam_out_list[i-1])
-            _ = element.propagate(beam_out_i)
-            beam_out[element.name] = beam_out_i
-            beam_out_list.append(beam_out_i)
-        elif isinstance(element, Plate):
-            beam_out_i = copy.deepcopy(beam_out_list[i-1])
-            beam_out_i, _, _ = element.double_refract(beam_out_i)
-            beam_out[element.name] = beam_out_i
-            beam_out_list.append(beam_out_i)
-        elif isinstance(element, ToroidMirrorDistorted):
-            beam_out_i = copy.deepcopy(beam_out_list[i-1])
-            element.reflect(beam_out_i)
-            beam_out[element.name] = beam_out_i
-            beam_out_list.append(beam_out_i)          
-        else:
-            raise NotImplementedError()
-
-    if dump_beams_flag:
-        for element in bl.list_of_elements_objects:
-            fname = "%s%s_%02d.npy" % (dump_beams_folder, element.name, REPETITION)
-            np.save(fname, beam_out_list[i])
-
-    dt = time.time() - t0
-    print("Time needed to create source and trace system %.3f sec" % dt)
-
-    REPETITION += 1
-
-    return screen_out
+#
+# run_process_code
+#
+{run_process_code}
 
 
 def make_plot(bl, screen, size=100, bins=1024, cbins=256):
@@ -489,12 +466,12 @@ def do_after_script(plots):
 # main
 #
 global REPETITION
-REPETITION = {REPETITION}
+REPETITION = 0
 
 #
 # xrt beamline
 #
-bl = build_beamline(name="{name}")
+bl = build_beamline(name="{beamline_name}")
 
 #
 # prepare output folders (in the directory with bl.name)
@@ -538,8 +515,6 @@ run_ray_tracing(plots=plots,
 
 
 
-
-
 """
 
 
@@ -547,35 +522,33 @@ if __name__ == "__main__":
     txt1 = """
 from xrt.backends.raycing import BeamLine
 from xrt.backends.raycing.sources import Undulator
-
-xrt_component = Undulator(
+component = Undulator(
     BeamLine(),
     name="u17",
-    center=[0, 0, 0],
-    period=0.017,
-    n=117.647,
+    center=[0,1250,0],
+    period=17.0,
+    n=117,
     eE=6.0,
     eI=0.2,
-    eEpsilonX=0.151152446676,
-    eEpsilonZ=0.014131139047200002,
-    eEspread=0.001,
-    eSigmaX=33.46035,
-    eSigmaZ=7.28154,
-    distE='eV',
-    targetE=[18070.0, 1],
+    eEpsilonX=0.0,
+    eEpsilonZ=0.0,
+    eEspread=0.00094,
+    eSigmaX=30.0,
+    eSigmaZ=5.2,
+    distE="eV",
+    targetE=[18070.0,1],
     eMin=17000.0,
     eMax=18500.0,
     nrays=20000,
-)
+    )
 """
 
     txt2 = """
 from xrt.backends.raycing import BeamLine
 from xrt.backends.raycing.screens import Screen
-
-xrt_component = Screen(
+component = Screen(
     BeamLine(),
-    name='sample_screen',
+    name="sample_screen",
     center=[0, 56289, 0],
     )
 """

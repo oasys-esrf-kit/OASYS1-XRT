@@ -80,17 +80,14 @@ import numpy as np
 from xrt.backends.raycing import BeamLine
 from xrt.backends.raycing.oes import Plate
 from xrt.backends.raycing.materials import Material
-
-    
-xrt_component = Plate(BeamLine(),
+component = Plate(BeamLine(),
     name='{name}',
     center={center},
     pitch={pitch},
     material={material},
     t={t},
     surface={surface},
-    )
-                             
+    )                             
 """
 
 

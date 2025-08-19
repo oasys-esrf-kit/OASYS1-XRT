@@ -227,7 +227,7 @@ class OWUndulatorLightSource(OWWidget, WidgetDecorator):
                           valueType=str,
                           orientation="horizontal")
 
-        oasysgui.lineEdit(self.tab_bas, self, "targetE", "Target (central) energy [eV]: ",
+        oasysgui.lineEdit(self.tab_bas, self, "targetE", "Target energy [eV]: ",
                           labelWidth=150,
                           valueType=str,
                           orientation="horizontal")
@@ -289,7 +289,7 @@ class OWUndulatorLightSource(OWWidget, WidgetDecorator):
 """
 from xrt.backends.raycing import BeamLine
 from xrt.backends.raycing.sources import Undulator
-xrt_component = Undulator(
+component = Undulator(
     BeamLine(),
     name="{name}",
     center={center},
@@ -308,7 +308,6 @@ xrt_component = Undulator(
     eMax={eMax},
     nrays={nrays},
     )
-
 """
 
     def receive_syned_data(self, data):
