@@ -8,15 +8,17 @@ from orangewidget.settings import Setting
 from orangecontrib.xrt.widgets.gui.ow_optical_element import OWOpticalElement
 from orangecontrib.xrt.util.xrt_data import XRTData
 
-class OWScreen(OWOpticalElement):
+class OWRectangularAperture(OWOpticalElement):
 
-    name = "Screen"
-    description = "XRT: Screen"
-    icon = "icons/screen.png"
-    priority = 4
+    name = "Rectangular Aperture"
+    description = "XRT: Rectangular Aperture"
+    icon = "icons/slit.png"
+    priority = 5
 
-    oe_name         = Setting("my_screen")
-    center  = Setting("[0,0,0]")
+    oe_name = Setting("my_rectangular_aperture")
+    center = Setting("[0,0,0]")
+    phg = Setting(1.0)
+    pvg = Setting(1.0)
 
 
     def __init__(self):
@@ -30,6 +32,16 @@ class OWScreen(OWOpticalElement):
                           valueType=str,
                           orientation="horizontal")
 
+        oasysgui.lineEdit(self.tab_bas, self, "phg", "Horizontal gap [mm]: ",
+                          labelWidth=250,
+                          valueType=float,
+                          orientation="horizontal")
+
+        oasysgui.lineEdit(self.tab_bas, self, "pvg", "Vertical gap [mm]: ",
+                          labelWidth=250,
+                          valueType=float,
+                          orientation="horizontal")
+
     def draw_specific_box(self):
         pass
 
@@ -41,6 +53,8 @@ class OWScreen(OWOpticalElement):
         xrtcode_parameters = {
             "name":self.oe_name,
             "center":self.center,
+            "phg": self.phg,
+            "pvg": self.pvg,
                 }
 
         return self.xrtcode_template().format_map(xrtcode_parameters)
@@ -49,14 +63,17 @@ class OWScreen(OWOpticalElement):
         return \
 """
 from xrt.backends.raycing import BeamLine
-from xrt.backends.raycing.screens import Screen
-xrt_component = Screen(
-    BeamLine(),
-    name="{name}",
-    center={center},
-    )
+from xrt.backends.raycing.apertures import RectangularAperture
 
+xrt_component = RectangularAperture(BeamLine(),
+    name='{name}',
+    center={center},
+    kind=('left', 'right', 'bottom', 'top'),
+    opening=[-{phg}/2, {phg}/2, -{pvg}/2, {pvg}/2])
+                             
 """
+
+
 
     def send_data(self):
         try:
@@ -81,7 +98,7 @@ if __name__ == "__main__":
     from PyQt5.QtWidgets import QApplication
 
     a = QApplication(sys.argv)
-    ow = OWScreen()
+    ow = OWRectangularAperture()
     ow.show()
     a.exec_()
 

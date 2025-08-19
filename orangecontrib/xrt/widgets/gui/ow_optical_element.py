@@ -1,7 +1,7 @@
 import numpy
 
 from PyQt5.QtGui import QPalette, QColor, QFont
-from PyQt5.QtWidgets import QMessageBox, QApplication
+from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QRect
 
 from orangewidget import gui
@@ -10,7 +10,7 @@ from orangewidget.settings import Setting
 from oasys.widgets.widget import OWWidget
 from oasys.widgets import gui as oasysgui
 from oasys.widgets import congruence
-from oasys.widgets.gui import ConfirmDialog
+from oasys.widgets.gui import ConfirmDialog, MessageDialog
 
 from syned.beamline.shape import *
 from syned.beamline.beamline import Beamline
@@ -39,9 +39,6 @@ class OWOpticalElement(OWWidget, WidgetDecorator):
 
 
     xrt_data = None
-
-    oe_name         = Setting("")
-    center  = Setting("[0,0,0]")
 
     shape = Setting(0)
     surface_shape = Setting(0)
@@ -105,16 +102,22 @@ class OWOpticalElement(OWWidget, WidgetDecorator):
         self.tabs_setting.setFixedWidth(self.CONTROL_AREA_WIDTH-5)
 
         self.tab_bas = oasysgui.createTabPage(self.tabs_setting, "O.E. Setting")
+        self.populate_tab_setting()
 
-        oasysgui.lineEdit(self.tab_bas, self, "oe_name", "O.E. Name", labelWidth=250, valueType=str, orientation="horizontal")
-
-        oasysgui.lineEdit(self.tab_bas, self, "center", "center: ",
-                          labelWidth=250,
-                          valueType=str,
-                          orientation="horizontal")
+        self.tab_xrtcode = oasysgui.createTabPage(self.tabs_setting, "XRT code")
+        self.populate_tab_xrtcode(self.tab_xrtcode)
 
         self.draw_specific_box()
 
+    def populate_tab_xrtcode(self, tab_util):
+        left_box_0 = oasysgui.widgetBox(tab_util, "XRT code to be sent", addSpace=False, orientation="vertical", height=450)
+        gui.button(left_box_0, self, "Update XRT code", callback=self.update_xrtcode)
+
+        self.xrtcode_id = oasysgui.textArea(height=380, width=415, readOnly=True)
+        left_box_0.layout().addWidget(self.xrtcode_id)
+
+    def update_xrtcode(self):
+        self.xrtcode_id.setText(self.get_xrt_code())
 
     def draw_specific_box(self):
         raise NotImplementedError()
@@ -127,26 +130,6 @@ class OWOpticalElement(OWWidget, WidgetDecorator):
 
     def send_data(self):
         raise NotImplementedError()
-        # try:
-        #     self.check_data()
-        #
-        #     if self.beamline is None: self.beamline = Beamline()
-        #
-        #     beamline_element = BeamlineElement(optical_element=self.get_optical_element(),
-        #                                        coordinates=ElementCoordinates(p=self.p,
-        #                                                                       q=self.q,
-        #                                                                       angle_radial=numpy.radians(self.angle_radial),
-        #                                                                       angle_azimuthal=numpy.radians(self.angle_azimuthal)))
-        #
-        #     output_beamline = self.beamline.duplicate()
-        #     output_beamline.append_beamline_element(beamline_element=beamline_element)
-        #
-        #     self.send("SynedData", output_beamline)
-        # except Exception as e:
-        #     QMessageBox.critical(self, "Error", str(e.args[0]), QMessageBox.Ok)
-        #
-        #     self.setStatusMessage("")
-        #     self.progressBarFinished()
 
     def get_optical_element(self):
         raise NotImplementedError()
@@ -159,7 +142,6 @@ class OWOpticalElement(OWWidget, WidgetDecorator):
             if self.is_automatic_run: self.send_data()
 
     def receive_xrt_data(self, data):
-        print(">>>>>>> receiving xrt data", data)
         if isinstance(data, XRTData):
             self.xrt_data = data
             if self.is_automatic_run: self.send_data()

@@ -8,16 +8,19 @@ from orangewidget.settings import Setting
 from orangecontrib.xrt.widgets.gui.ow_optical_element import OWOpticalElement
 from orangecontrib.xrt.util.xrt_data import XRTData
 
-class OWScreen(OWOpticalElement):
+class OWPlate(OWOpticalElement):
 
-    name = "Screen"
-    description = "XRT: Screen"
-    icon = "icons/screen.png"
-    priority = 4
+    name = "Plate"
+    description = "XRT: Plate"
+    icon = "icons/filter.png"
+    priority = 6
 
-    oe_name         = Setting("my_screen")
-    center  = Setting("[0,0,0]")
-
+    oe_name = Setting("my_plate")
+    center = Setting("[0,0,0]")
+    pitch = Setting("np.pi/2")
+    material = Setting("Material('C', rho=3.52, kind='plate')")
+    t = Setting(0.3)
+    surface = Setting("r'diamond 300$\mu$m'")
 
     def __init__(self):
         super().__init__()
@@ -30,6 +33,27 @@ class OWScreen(OWOpticalElement):
                           valueType=str,
                           orientation="horizontal")
 
+        oasysgui.lineEdit(self.tab_bas, self, "pitch", "pitch angle [rad]: ",
+                          labelWidth=150,
+                          valueType=str,
+                          orientation="horizontal")
+
+        oasysgui.lineEdit(self.tab_bas, self, "material", "material command: ",
+                          labelWidth=150,
+                          valueType=str,
+                          orientation="horizontal")
+
+        oasysgui.lineEdit(self.tab_bas, self, "t", "thickness [mm]: ",
+                          labelWidth=250,
+                          valueType=float,
+                          orientation="horizontal")
+
+        oasysgui.lineEdit(self.tab_bas, self, "surface", "surface command: ",
+                          labelWidth=150,
+                          valueType=str,
+                          orientation="horizontal")
+
+
     def draw_specific_box(self):
         pass
 
@@ -41,6 +65,10 @@ class OWScreen(OWOpticalElement):
         xrtcode_parameters = {
             "name":self.oe_name,
             "center":self.center,
+            "pitch": self.pitch,
+            "material": self.material,
+            "t": self.t,
+            "surface": self.surface,
                 }
 
         return self.xrtcode_template().format_map(xrtcode_parameters)
@@ -48,15 +76,24 @@ class OWScreen(OWOpticalElement):
     def xrtcode_template(self):
         return \
 """
+import numpy as np
 from xrt.backends.raycing import BeamLine
-from xrt.backends.raycing.screens import Screen
-xrt_component = Screen(
-    BeamLine(),
-    name="{name}",
-    center={center},
-    )
+from xrt.backends.raycing.oes import Plate
+from xrt.backends.raycing.materials import Material
 
+    
+xrt_component = Plate(BeamLine(),
+    name='{name}',
+    center={center},
+    pitch={pitch},
+    material={material},
+    t={t},
+    surface={surface},
+    )
+                             
 """
+
+
 
     def send_data(self):
         try:
@@ -81,7 +118,7 @@ if __name__ == "__main__":
     from PyQt5.QtWidgets import QApplication
 
     a = QApplication(sys.argv)
-    ow = OWScreen()
+    ow = OWPlate()
     ow.show()
     a.exec_()
 

@@ -38,6 +38,10 @@ class DiagonalizePythonScript(widget.OWWidget):
     beamline_name = Setting("my_beamline")
     repetition = Setting(3)
 
+    screens_to_plot = Setting("['sample_screen']")
+    sizes_in_um = Setting("[10000]")
+
+
     script_file_flag = Setting(0)
     script_file_name = Setting("tmp.py")
 
@@ -106,6 +110,7 @@ class DiagonalizePythonScript(widget.OWWidget):
 
         gui.separator(self.controlArea)
 
+        ###
         gen_box = oasysgui.widgetBox(self.controlArea, "Main", addSpace=False, orientation="vertical", width=self.CONTROL_AREA_WIDTH-5)
 
         oasysgui.lineEdit(gen_box, self, "beamline_name", "Beamline name", labelWidth=150, valueType=int,
@@ -113,6 +118,15 @@ class DiagonalizePythonScript(widget.OWWidget):
         oasysgui.lineEdit(gen_box, self, "repetition", "Number of repetitions", labelWidth=250, valueType=int,
                           orientation="horizontal", callback=self.refresh_script)
 
+        ###
+        gen_box = oasysgui.widgetBox(self.controlArea, "Plots", addSpace=False, orientation="vertical", width=self.CONTROL_AREA_WIDTH-5)
+
+        oasysgui.lineEdit(gen_box, self, "screens_to_plot", "List with screens to plot", labelWidth=150, valueType=str,
+                          orientation="horizontal", callback=self.refresh_script)
+        oasysgui.lineEdit(gen_box, self, "sizes_in_um", "List with screen size in um", labelWidth=150, valueType=str,
+                          orientation="horizontal", callback=self.refresh_script)
+
+        ###
         gen_box = oasysgui.widgetBox(self.controlArea, "Output files", addSpace=False, orientation="vertical", width=self.CONTROL_AREA_WIDTH-5)
         gui.comboBox(gen_box, self, "script_file_flag", label="write file with script",
                      items=["No", "Yes"], labelWidth=300,
@@ -226,12 +240,14 @@ class DiagonalizePythonScript(widget.OWWidget):
 
         # print(">>>>>>>>>>>>>>>>>>", self.oasys_xrt_components_code_old())
 
-        print(">>>>>>>>>>>>>>>>>>", self.oasys_xrt_components_code())
+        # print(">>>>>>>>>>>>>>>>>>", self.oasys_xrt_components_code())
 
         code_parameters = {
             "name": self.beamline_name,
             "REPETITION": self.repetition,
             "oasys_xrt_components_code": self.oasys_xrt_components_code(),
+            "screens_to_plot": self.screens_to_plot,
+            "sizes_in_um": self.sizes_in_um,
                 }
 
         template_code = self.get_template_code()
@@ -250,10 +266,9 @@ class DiagonalizePythonScript(widget.OWWidget):
         if self.input_data is None: self.input_data = XRTData()
 
         for i in range(self.input_data.number_of_components()):
-            print(">>>>>>>>>>>>> index: ", i)
             txt_i = self.input_data.component(i)
             txt += indent + "#\n"
-            txt += indent + "# Component index: %d\n#" % i
+            txt += indent + "# Component index: %d\n" % i
             txt += indent + "#\n"
             txt += indent + "oasys_list_of_elements.append('''%s''')\n" % txt_i
 
@@ -312,6 +327,7 @@ xrt_component = Screen(
         return """
 import os
 import time
+import copy
 import numpy as np
 from scipy.signal import savgol_filter
 import xrt
@@ -319,55 +335,18 @@ import xrt
 from xrt.backends.raycing import BeamLine
 from xrt.backends.raycing.sources import Undulator
 from xrt.backends.raycing.screens import Screen
+from xrt.backends.raycing.oes import Plate
+from xrt.backends.raycing.apertures import RectangularAperture
+from id09_xrt import ToroidMirrorDistorted
+from xrt.backends.raycing.oes import DoubleParaboloidLens
+
 from xrt.plotter import XYCAxis, XYCPlot
 from xrt.runner import run_ray_tracing
 
 #
-# !!!! ADD HERE THE FUNCTION oasys_xrt_components_code() !!!!!!
+# !!!! HERE THE FUNCTION oasys_xrt_components_code() !!!!!!
 #
 {oasys_xrt_components_code}
-# def oasys_xrt_components_code():
-# 
-#     oasys_list_of_elements = []
-# 
-#     oasys_list_of_elements.append('''
-# from xrt.backends.raycing import BeamLine
-# from xrt.backends.raycing.sources import Undulator
-# 
-# xrt_component = Undulator(
-#     BeamLine(),
-#     name="u17",
-#     center=[0,1250,0],
-#     period=17,
-#     n=117,
-#     eE=6.0,
-#     eI=0.2,
-#     eEpsilonX=0.130,
-#     eEpsilonZ=0.010,
-#     eEspread=9.4e-4,
-#     eSigmaX=30.0,
-#     eSigmaZ=5.2,
-#     distE="eV",
-#     targetE=[18070.0, 1],
-#     eMin=17000.0,
-#     eMax=18500.0,
-#     nrays=20000,
-#     )
-# ''')
-# 
-#     oasys_list_of_elements.append('''
-# 
-# from xrt.backends.raycing import BeamLine
-# from xrt.backends.raycing.screens import Screen
-# 
-# xrt_component = Screen(
-#     BeamLine(),
-#     name="sample_screen",
-#     center=[0, 56289, 0],
-#     )
-# ''')
-# 
-#     return oasys_list_of_elements
 
 
 def oasys_xrt_components_objects(oasys_list_of_elements):
@@ -403,17 +382,37 @@ def run_process(bl):
     t0 = time.time()
 
     beam_out = dict()
+    screen_out = dict()
     beam_out_list = []
 
     for i, element in enumerate(bl.list_of_elements_objects):
         if isinstance(element, Undulator):
-            out_i = element.shine()
-            beam_out[element.name] = out_i
-            beam_out_list.append(out_i)
+            beam_out_i = element.shine()
+            beam_out[element.name] = beam_out_i
+            beam_out_list.append(beam_out_i)
         elif isinstance(element, Screen):
-            out_i = bl.sample_screen.expose(beam_out_list[i-1])
-            beam_out[element.name] = out_i
-            beam_out_list.append(out_i)
+            beam_out_i = copy.deepcopy(beam_out_list[i-1])
+            screen_i = element.expose(beam_out_i)
+            beam_out[element.name] = beam_out_i
+            screen_out[element.name] = screen_i
+            beam_out_list.append(beam_out_i)
+        elif isinstance(element, RectangularAperture):
+            beam_out_i = copy.deepcopy(beam_out_list[i-1])
+            _ = element.propagate(beam_out_i)
+            beam_out[element.name] = beam_out_i
+            beam_out_list.append(beam_out_i)
+        elif isinstance(element, Plate):
+            beam_out_i = copy.deepcopy(beam_out_list[i-1])
+            beam_out_i, _, _ = element.double_refract(beam_out_i)
+            beam_out[element.name] = beam_out_i
+            beam_out_list.append(beam_out_i)
+        elif isinstance(element, ToroidMirrorDistorted):
+            beam_out_i = copy.deepcopy(beam_out_list[i-1])
+            element.reflect(beam_out_i)
+            beam_out[element.name] = beam_out_i
+            beam_out_list.append(beam_out_i)          
+        else:
+            raise NotImplementedError()
 
     if dump_beams_flag:
         for element in bl.list_of_elements_objects:
@@ -425,7 +424,7 @@ def run_process(bl):
 
     REPETITION += 1
 
-    return beam_out
+    return screen_out
 
 
 def make_plot(bl, screen, size=100, bins=1024, cbins=256):
@@ -519,8 +518,8 @@ xrt.backends.raycing.run.run_process = run_process
 #
 # define plots
 #
-screens_to_plot = ['sample_screen']
-sizes_in_um     = [10000]
+screens_to_plot = {screens_to_plot}
+sizes_in_um     = {sizes_in_um}
 
 plots = []
 for i in range(len(screens_to_plot)):
@@ -530,7 +529,7 @@ for i in range(len(screens_to_plot)):
 # run
 #
 run_ray_tracing(plots=plots,
-                repeats=2,
+                repeats={REPETITION},
                 pickleEvery=1,
                 updateEvery=1,
                 beamLine=bl,
