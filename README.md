@@ -7,17 +7,17 @@ It is in development phase.
 
 To install the add-on as developper: 
 
-+ git clone https://github.com/oasys-esrf-kit/OASYS1-XRT
-+ cd OASYS1-XRT
-+ with the python that Oasys is using: python -m pip install -e . --no-deps --no-binary :all:
-+ Restart Oasys: python -m oasys.canvas -l4 --force-discovery
++ ``git clone https://github.com/oasys-esrf-kit/OASYS1-XRT``
++ ``cd OASYS1-XRT``
++ with the python that Oasys is using: ``python -m pip install -e . --no-deps --no-binary :all:``
++ Restart Oasys: ``python -m oasys.canvas -l4 --force-discovery``
 
 ## OASYS1-XRT installation as user
 
 To install the add-on as user: 
 
 + In the Oasys window, open "Options->Add-ons..."
-+ Click the button: Add more..."
++ Click the button: "Add more..."
 + Enter: OASYS1-XRT
 + In the add-ons list, check the option "XRT"
 + Click "OK"
@@ -30,4 +30,8 @@ You can use "Open Remote" in Oasys and load
 
 + Simple example: https://raw.githubusercontent.com/oasys-esrf-kit/OASYS1-XRT/refs/heads/main/example_workspaces/xrt_test.ows
 + ESRF ID09 beamline: https://raw.githubusercontent.com/oasys-esrf-kit/modelling_team_scripts_and_workspaces/refs/heads/main/id09/ID09_ray_tracing_secondary_source_lens_s4_xrt_comparison_v2.ows
+
+
+
+<img width="1561" height="388" alt="image" src="https://github.com/user-attachments/assets/0594543d-fe4e-403f-83d2-24929506307b" />
 
