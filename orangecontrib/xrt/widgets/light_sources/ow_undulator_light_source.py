@@ -1,8 +1,8 @@
-import sys, numpy,  scipy.constants as codata
+import sys
 
-from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QPalette, QColor, QFont
-from PyQt5.QtWidgets import QMessageBox, QApplication
+from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import QRect
 
 from orangewidget import widget
@@ -11,28 +11,12 @@ from orangewidget.settings import Setting
 
 from oasys.widgets.widget import OWWidget
 from oasys.widgets import gui as oasysgui
-from oasys.widgets import congruence
-from oasys.widgets.gui import ConfirmDialog, MessageDialog
-
-from syned.storage_ring.magnetic_structures.undulator import Undulator
-
-from orangecontrib.xrt.widgets.gui import ow_insertion_device
-
-from PyQt5.QtWidgets import QTextEdit
 
 from syned.widget.widget_decorator import WidgetDecorator
 from syned.beamline.beamline import Beamline as SynedBeamline
 from syned.storage_ring.light_source import LightSource as SynedLightSource
 
 from orangecontrib.xrt.util.xrt_data import XRTData
-
-
-m2ev = codata.c * codata.h / codata.e
-
-VERTICAL = 1
-HORIZONTAL = 2
-BOTH = 3
-
 
 class OWUndulatorLightSource(OWWidget, WidgetDecorator):
 
@@ -98,16 +82,6 @@ class OWUndulatorLightSource(OWWidget, WidgetDecorator):
         button.setPalette(palette) # assign new palette
         button.setFixedHeight(45)
 
-        # button = gui.button(button_box, self, "Reset Fields", callback=self.callResetSettings)
-        # font = QFont(button.font())
-        # font.setItalic(True)
-        # button.setFont(font)
-        # palette = QPalette(button.palette()) # make a copy of the palette
-        # palette.setColor(QPalette.ButtonText, QColor('Dark Red'))
-        # button.setPalette(palette) # assign new palette
-        # button.setFixedHeight(45)
-        # button.setFixedWidth(150)
-
         gui.separator(self.controlArea)
 
         geom = QApplication.desktop().availableGeometry()
@@ -134,38 +108,7 @@ class OWUndulatorLightSource(OWWidget, WidgetDecorator):
         self.draw_specific_box()
 
 
-    # def __init__(self):
-    #     super().__init__()
-    #
-    #     tab_raytracing = oasysgui.createTabPage(self.tabs_setting, "Ray Tracing Setting")
-    #     self.populate_tab_raytracing(tab_raytracing)
-    #
-    #     tab_xrtcode = oasysgui.createTabPage(self.tabs_setting, "XRT code")
-    #     self.populate_tab_xrtcode(tab_xrtcode)
-    #
-    #     tab_util = oasysgui.createTabPage(self.tabs_setting, "Utility")
-    #     self.populate_tab_utility(tab_util)
-    #
-    #
     def populate_tab_setting(self):
-
-        # source_name = Setting("my_source")
-        # center = Setting("[0,0,0]")
-        # period = Setting(10.0)  # mm
-        # n = Setting(100)
-        # eE = Setting(1.0)  # GeV
-        # eI = Setting(0.1)  # A
-        # eEpsilonX = (0.0)  # nm.rad
-        # eEpsilonZ = (0.0)  # nm.rad
-        # eSpread = Setting(0.0)  # %
-        # eSigmaX = Setting(0.0)  # um
-        # eSigmaZ = Setting(0.0)  # um
-        # distE = Setting("eV")
-        # targetE = Setting("[18070.0, 1]")
-        # eMin = Setting(17000.0)
-        # eMax = Setting(18500.0)
-        # nrays = Setting(20000)
-
         oasysgui.lineEdit(self.tab_bas, self, "source_name", "Source Name", labelWidth=150, valueType=str, orientation="horizontal")
 
         oasysgui.lineEdit(self.tab_bas, self, "center", "center: ",
@@ -173,12 +116,10 @@ class OWUndulatorLightSource(OWWidget, WidgetDecorator):
                           valueType=str,
                           orientation="horizontal")
 
-
         oasysgui.lineEdit(self.tab_bas, self, "eE", "Electron beam energy [GeV]: ",
                           labelWidth=250,
                           valueType=float,
                           orientation="horizontal")
-
 
         oasysgui.lineEdit(self.tab_bas, self, "eI", "Electron beam current [A]: ",
                           labelWidth=250,
@@ -210,12 +151,10 @@ class OWUndulatorLightSource(OWWidget, WidgetDecorator):
                           valueType=float,
                           orientation="horizontal")
 
-
         oasysgui.lineEdit(self.tab_bas, self, "period", "Period [mm]: ",
                           labelWidth=250,
                           valueType=float,
                           orientation="horizontal")
-
 
         oasysgui.lineEdit(self.tab_bas, self, "n", "Number of Periods: ",
                           labelWidth=250,
@@ -332,12 +271,6 @@ component = Undulator(
             self.targetE = "[%f, 1]" % e0
             self.eMin = e0 - 100
             self.eMax = e0 + 100
-
-            # self._K_vertical = K_vertical
-            # self._K_horizontal = K_horizontal
-            # self._period_length = period_length
-            # self._K_vertical = number_of_periods
-
             self.period = 1e3 * id._period_length
             self.n = int(id._number_of_periods)
 
@@ -349,7 +282,6 @@ component = Undulator(
         pass
 
     def send_data(self):
-
         try:
             self.check_data()
 
@@ -362,8 +294,6 @@ component = Undulator(
             self.progressBarFinished()
 
 if __name__ == "__main__":
-    from PyQt5.QtWidgets import QApplication
-
     a = QApplication(sys.argv)
     ow = OWUndulatorLightSource()
     ow.show()

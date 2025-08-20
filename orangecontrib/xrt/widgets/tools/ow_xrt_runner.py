@@ -1,7 +1,8 @@
 import sys
+
+from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QPalette, QColor, QFont
-from PyQt5.QtWidgets import QApplication, QFileDialog
-from PyQt5.QtWidgets import QLabel, QApplication, QMessageBox, QSizePolicy
+from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import QRect
 from PyQt5.QtGui import QTextCursor
 
@@ -10,15 +11,12 @@ from orangewidget.settings import Setting
 
 from oasys.widgets import gui as oasysgui
 from oasys.widgets import widget
-from oasys.util.oasys_util import TriggerIn, TriggerOut, EmittingStream
+from oasys.util.oasys_util import EmittingStream
 
-# from orangecontrib.wofry.util.wofry_objects import WofryData
-from orangecontrib.wofry.widgets.gui.python_script import PythonConsole # TODO: copy in XRT
-
-
+from orangecontrib.xrt.widgets.gui.python_script import PythonConsole
 from orangecontrib.xrt.util.xrt_data import XRTData
 
-class DiagonalizePythonScript(widget.OWWidget):
+class OWRunner(widget.OWWidget):
 
     name = "XRT Runner Python Script"
     description = "XRT Runner Python Script"
@@ -48,9 +46,6 @@ class DiagonalizePythonScript(widget.OWWidget):
 
     dump_scores_flag = Setting(0)
     dump_beams_flag = Setting(0)
-
-    # show_graph_flag = Setting(1)
-    # root_file_name = Setting("tmp")
 
     #
     #
@@ -191,17 +186,14 @@ class DiagonalizePythonScript(widget.OWWidget):
             if self.is_automatic_run:
                 self.refresh_script()
 
-
     def callResetSettings(self):
         pass
 
     def execute_script(self):
-
         self._script = str(self.pythonScript.toPlainText())
         self.console.write("\nRunning script:\n")
         self.console.push("exec(_script)")
         self.console.new_prompt(sys.ps1)
-
 
     def save_script(self):
         file_name = self.script_file_name
@@ -211,15 +203,10 @@ class DiagonalizePythonScript(widget.OWWidget):
                 file.write(str(self.pythonScript.toPlainText()))
                 file.close()
 
-
     def refresh_script(self):
-
         self.wofry_output.setText("")
 
         sys.stdout = EmittingStream(textWritten=self.writeStdOut)
-
-        # if self.input_data is None:
-        #     raise Exception("No input data")
 
         self.pythonScript.setText(self.to_python_code())
 
@@ -234,7 +221,6 @@ class DiagonalizePythonScript(widget.OWWidget):
         self.wofry_output.ensureCursorVisible()
 
     def to_python_code(self):
-
         if self.input_data is None: return "# << ERROR No XRDData >>"
 
         code_parameters = {
@@ -253,7 +239,7 @@ class DiagonalizePythonScript(widget.OWWidget):
     def build_beamline_code(self):
         indent = "    "
         txt = ""
-        txt += "def build_beamline(name='', force_beam=True):\n"
+        txt += "def build_beamline(name=''):\n"
         txt += "\n"
         txt += indent + "from xrt.backends.raycing import BeamLine\n"
         txt += indent + "bl = BeamLine()\n"
@@ -319,7 +305,7 @@ class DiagonalizePythonScript(widget.OWWidget):
                 from xrt.backends.raycing.screens import Screen
                 from xrt.backends.raycing.oes import Plate
                 from xrt.backends.raycing.apertures import RectangularAperture
-                from orangecontrib.xrt.util.id09_xrt import ToroidMirrorDistorted
+                from orangecontrib.xrt.util.toroid_mirror_distorted import ToroidMirrorDistorted # TODO: use native XRT
                 from xrt.backends.raycing.oes import DoubleParaboloidLens
 
                 if isinstance(component, Undulator):
@@ -355,18 +341,6 @@ class DiagonalizePythonScript(widget.OWWidget):
                 QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
                 if self.IS_DEVELOP: raise exception
 
-
-
-            # txt_i_indented = "\n".join(indent + line for line in txt_i.splitlines())
-            #
-            # txt += "\n"
-            # txt += indent + "#\n"
-            # txt += indent + "# Component index: %d\n" % i
-            # txt += indent + "#\n"
-            # txt += txt_i_indented
-            # txt += "\n"
-            # txt += indent + "setattr(bl, component.name, component)\n"
-
         txt += "\n"
 
         txt += indent + "#\n"
@@ -378,7 +352,6 @@ class DiagonalizePythonScript(widget.OWWidget):
         txt += indent + "return beam_at_screens\n"
 
         return txt
-
 
 
     def get_template_code(self):
@@ -556,9 +529,8 @@ component = Screen(
     oo = XRTData(component=txt1)
     oo.append(txt2)
 
-
     a = QApplication(sys.argv)
-    ow = DiagonalizePythonScript()
+    ow = OWRunner()
     ow.set_input(oo)
     ow.show()
     a.exec_()

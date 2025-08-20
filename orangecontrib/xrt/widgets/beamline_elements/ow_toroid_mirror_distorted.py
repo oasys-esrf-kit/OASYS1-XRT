@@ -1,9 +1,7 @@
-from syned.beamline.optical_elements.ideal_elements.screen import Screen
-
 from PyQt5.QtWidgets import QMessageBox
 
-from oasys.widgets import gui as oasysgui
 from orangewidget.settings import Setting
+from oasys.widgets import gui as oasysgui
 
 from orangecontrib.xrt.widgets.gui.ow_optical_element import OWOpticalElement
 from orangecontrib.xrt.util.xrt_data import XRTData
@@ -12,7 +10,7 @@ class OWToridMirrorDistorted(OWOpticalElement):
 
     name = "Toroid Mirror Distorted"
     description = "XRT: Toroid Mirror Distorted"
-    icon = "icons/mirror.png"
+    icon = "icons/toroidal_mirror.png"
     priority = 7
 
 
@@ -101,7 +99,7 @@ class OWToridMirrorDistorted(OWOpticalElement):
 """
 import numpy as np
 from xrt.backends.raycing import BeamLine
-from orangecontrib.xrt.util.id09_xrt import ToroidMirrorDistorted
+from orangecontrib.xrt.util.toroid_mirror_distorted import ToroidMirrorDistorted # TODO: use native XRT
 from xrt.backends.raycing.materials import Material
 component = ToroidMirrorDistorted(
     distorsion_factor=1,

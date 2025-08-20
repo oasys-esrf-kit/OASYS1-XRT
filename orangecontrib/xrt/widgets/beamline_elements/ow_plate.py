@@ -1,9 +1,7 @@
-from syned.beamline.optical_elements.ideal_elements.screen import Screen
-
 from PyQt5.QtWidgets import QMessageBox
 
-from oasys.widgets import gui as oasysgui
 from orangewidget.settings import Setting
+from oasys.widgets import gui as oasysgui
 
 from orangecontrib.xrt.widgets.gui.ow_optical_element import OWOpticalElement
 from orangecontrib.xrt.util.xrt_data import XRTData
@@ -89,8 +87,6 @@ component = Plate(BeamLine(),
     surface={surface},
     )                             
 """
-
-
 
     def send_data(self):
         try:

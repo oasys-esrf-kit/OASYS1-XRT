@@ -8,7 +8,7 @@
 		<node id="4" name="Undulator Light Source" qualified_name="orangecontrib.xrt.widgets.light_sources.ow_undulator_light_source.OWUndulatorLightSource" project_name="OASYS1-XRT" version="" title="Undulator Light Source" position="(338.0, 473.0)" />
 		<node id="5" name="ESRF-EBS ID Light Source" qualified_name="orangecontrib.esrf.syned.widgets.extension.ow_ebs.OWEBS" project_name="OASYS1-ESRF-Extensions" version="" title="ESRF-EBS ID Light Source" position="(128.0, 377.0)" />
 		<node id="6" name="Python Script" qualified_name="oasys.widgets.tools.ow_python_script.OWPythonScript" project_name="OASYS1" version="" title="Python Script" position="(628.0, 657.0)" />
-		<node id="7" name="XRT Runner Python Script" qualified_name="orangecontrib.xrt.widgets.tools.ow_xrt_runner.DiagonalizePythonScript" project_name="OASYS1-XRT" version="" title="XRT Runner Python Script" position="(796.0, 467.0)" />
+		<node id="7" name="XRT Runner Python Script" qualified_name="orangecontrib.xrt.widgets.tools.ow_xrt_runner.OWRunner" project_name="OASYS1-XRT" version="" title="XRT Runner Python Script" position="(796.0, 467.0)" />
 		<node id="8" name="Python Script" qualified_name="oasys.widgets.tools.ow_python_script.OWPythonScript" project_name="OASYS1" version="" title="Python Script" position="(415.0, 650.0)" />
 	</nodes>
 	<links>
@@ -109,7 +109,7 @@ AAAAAAAAAAAHgAAAA68AAAC7AAAGzgAAAxKUhZSHlFKUjA1zcGxpdHRlclN0YXRllE51Lg==
 		<properties node_id="7" format="pickle">gASVcwEAAAAAAAB9lCiMDWJlYW1saW5lX25hbWWUjA9teV94cnRfYmVhbWxpbmWUjA9kdW1wX2Jl
 YW1zX2ZsYWeUSwGMEGR1bXBfc2NvcmVzX2ZsYWeUSwGMEGlzX2F1dG9tYXRpY19ydW6UiIwKcmVw
 ZXRpdGlvbpRLA4wTc2F2ZWRXaWRnZXRHZW9tZXRyeZSMA3NpcJSMDl91bnBpY2tsZV90eXBllJOU
-jAxQeVF0NS5RdENvcmWUjApRQnl0ZUFycmF5lENCAdnQywADAAAAAAiSAAABSgAADbkAAAQqAAAI
+jAxQeVF0NS5RdENvcmWUjApRQnl0ZUFycmF5lENCAdnQywADAAAAAAiSAAABbwAADbkAAAQqAAAI
 kgAAAW8AAA25AAAEKgAAAAEAAAAAB4AAAAiSAAABbwAADbkAAAQqlIWUh5RSlIwPc2NyZWVuc190
 b19wbG90lF2UjA1zYW1wbGVfc2NyZWVulGGMEHNjcmlwdF9maWxlX2ZsYWeUSwCMEHNjcmlwdF9m
 aWxlX25hbWWUjAZ0bXAucHmUjAtzaXplc19pbl91bZRdlE0QJ2F1Lg==
