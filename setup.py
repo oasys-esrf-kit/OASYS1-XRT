@@ -29,7 +29,7 @@
 #
 # Install from sources:
 #     git clone https://github.com/oasys-esrf-kit/OASYS1-XRT
-#     cd OASYS1-SXRT
+#     cd OASYS1-XRT
 #     python -m pip install -e . --no-deps --no-binary :all:
 #
 # Upload to pypi (when uploading, increment the version number):
@@ -82,6 +82,7 @@ SETUP_REQUIRES = (
 INSTALL_REQUIRES = (
     'oasys1>=1.2.131',
     'syned-gui>=1.0.3',
+    'xrt',
 )
 
 PACKAGES = find_packages(exclude=('*.tests', '*.tests.*', 'tests.*', 'tests'))
