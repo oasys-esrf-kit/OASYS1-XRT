@@ -1,6 +1,7 @@
 # OASYS1-XRT
 
-This is the official user interface for SHADOW4 (https://github.com/oasys-kit/shadow4). It is presented as an OASYS add-on.
+This is the OASYS user interface for XRT (https://xrt.readthedocs.io/).
+It is in development phase.
 
 ## OASYS1-XRT installation as developper
 
@@ -21,4 +22,12 @@ To install the add-on as user:
 + In the add-ons list, check the option "XRT"
 + Click "OK"
 + Restart Oasys.
+
+
+## Workspaces with examples
+
+You can use "Open Remote" in Oasys and load
+
++ Simple example: https://raw.githubusercontent.com/oasys-esrf-kit/OASYS1-XRT/refs/heads/main/example_workspaces/xrt_test.ows
++ ESRF ID09 beamline: https://raw.githubusercontent.com/oasys-esrf-kit/modelling_team_scripts_and_workspaces/refs/heads/main/id09/ID09_ray_tracing_secondary_source_lens_s4_xrt_comparison_v2.ows
 

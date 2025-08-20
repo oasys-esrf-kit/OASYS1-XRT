@@ -49,7 +49,7 @@ except AttributeError:
     from setuptools import find_packages, setup
 
 NAME = 'OASYS1-XRT'
-VERSION = '0.0.01'
+VERSION = '0.0.02'
 ISRELEASED = False
 
 DESCRIPTION = 'XRT'
@@ -61,29 +61,29 @@ URL = 'https://github.com/oasys-esrf-kit/OASYS1-XRT'
 DOWNLOAD_URL = 'https://github.com/oasys-esrf-kit/OASYS1-XRT'
 LICENSE = 'MIT'
 
-KEYWORDS = (
+KEYWORDS = [
     'simulator',
     'oasys1',
-)
+]
 
-CLASSIFIERS = (
+CLASSIFIERS = [
     'Development Status :: 4 - Beta',
     'Environment :: X11 Applications :: Qt',
     'Environment :: Console',
     'Environment :: Plugins',
     'Programming Language :: Python :: 3',
     'Intended Audience :: Science/Research',
-)
+]
 
-SETUP_REQUIRES = (
+SETUP_REQUIRES = [
     'setuptools',
-)
+]
 
-INSTALL_REQUIRES = (
+INSTALL_REQUIRES = [
     'oasys1>=1.2.131',
     'syned-gui>=1.0.3',
     'xrt',
-)
+]
 
 PACKAGES = find_packages(exclude=('*.tests', '*.tests.*', 'tests.*', 'tests'))
 
