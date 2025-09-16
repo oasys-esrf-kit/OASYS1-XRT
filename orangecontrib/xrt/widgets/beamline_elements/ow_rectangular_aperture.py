@@ -46,23 +46,24 @@ class OWRectangularAperture(OWOpticalElement):
     def check_data(self):
         pass
 
-    def get_xrt_code(self):
-
-        xrtcode_parameters = {
+    def xrtcode_parameters(self):
+        return {
+            "class_name":"RectangularAperture",
             "name":self.oe_name,
             "center":self.center,
             "phg": self.phg,
             "pvg": self.pvg,
                 }
 
-        return self.xrtcode_template().format_map(xrtcode_parameters)
+    def get_xrt_code(self):
+        return self.xrtcode_template().format_map(self.xrtcode_parameters())
 
     def xrtcode_template(self):
         return \
 """
-from xrt.backends.raycing import BeamLine
 from xrt.backends.raycing.apertures import RectangularAperture
-component = RectangularAperture(BeamLine(),
+bl.{name} = RectangularAperture(
+    bl,
     name='{name}',
     center={center},
     kind=('left', 'right', 'bottom', 'top'),
@@ -75,11 +76,11 @@ component = RectangularAperture(BeamLine(),
         try:
             self.check_data()
             if self.xrt_data is None:
-                out_xrt_data = XRTData()
+                out_xrt_data = XRTData("", {})
             else:
                 out_xrt_data = self.xrt_data.duplicate()
 
-            out_xrt_data.append(self.get_xrt_code())
+            out_xrt_data.append(self.get_xrt_code(), self.xrtcode_parameters())
 
             self.send("XRTData", out_xrt_data)
         except Exception as e:

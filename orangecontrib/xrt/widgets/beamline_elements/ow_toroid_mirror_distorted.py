@@ -78,9 +78,9 @@ class OWToridMirrorDistorted(OWOpticalElement):
     def check_data(self):
         pass
 
-    def get_xrt_code(self):
-
-        xrtcode_parameters = {
+    def xrtcode_parameters(self):
+        return {
+            "class_name":"ToroidMirrorDistorted",
             "name":self.oe_name,
             "center":self.center,
             "material": self.material,
@@ -92,28 +92,42 @@ class OWToridMirrorDistorted(OWOpticalElement):
             "limPhysY": self.limPhysY,
                 }
 
-        return self.xrtcode_template().format_map(xrtcode_parameters)
+    def get_xrt_code(self):
+       return self.xrtcode_template().format_map(self.xrtcode_parameters())
 
     def xrtcode_template(self):
         return \
 """
-import numpy as np
-from xrt.backends.raycing import BeamLine
-from orangecontrib.xrt.util.toroid_mirror_distorted import ToroidMirrorDistorted # TODO: use native XRT
+from orangecontrib.xrt.util.toroid_mirror_distorted import ToroidMirrorDistorted
+from xrt.backends.raycing.oes import ToroidMirror
 from xrt.backends.raycing.materials import Material
-component = ToroidMirrorDistorted(
-    distorsion_factor=1,
-    bl=BeamLine(),
-    name='{name}',
-    center={center},
-    material={material},
-    R={R},
-    r={r},
-    pitch={pitch},
-    yaw={yaw},
-    limPhysX={limPhysX},
-    limPhysY={limPhysY},
-    )              
+if True:
+    bl.{name} = ToroidMirrorDistorted(
+        distorsion_factor=1,
+        bl=bl,
+        name='{name}',
+        center={center},
+        material={material},
+        R={R},
+        r={r},
+        pitch={pitch},
+        yaw={yaw},
+        limPhysX={limPhysX},
+        limPhysY={limPhysY},
+        )
+else:
+    bl.{name} = ToroidMirror(
+        bl,
+        name='{name}',
+        center={center},
+        material={material},
+        R={R},
+        r={r},
+        pitch={pitch},
+        yaw={yaw},
+        limPhysX={limPhysX},
+        limPhysY={limPhysY},
+        ) 
 """
 
 
@@ -122,11 +136,11 @@ component = ToroidMirrorDistorted(
         try:
             self.check_data()
             if self.xrt_data is None:
-                out_xrt_data = XRTData()
+                out_xrt_data = XRTData("", {})
             else:
                 out_xrt_data = self.xrt_data.duplicate()
 
-            out_xrt_data.append(self.get_xrt_code())
+            out_xrt_data.append(self.get_xrt_code(), self.xrtcode_parameters())
 
             self.send("XRTData", out_xrt_data)
         except Exception as e:

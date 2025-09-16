@@ -75,9 +75,9 @@ class OWDoubleParaboloidLens(OWOpticalElement):
     def check_data(self):
         pass
 
-    def get_xrt_code(self):
-
-        xrtcode_parameters = {
+    def xrtcode_parameters(self):
+        return {
+            "class_name":"DoubleParaboloidLens",
             "name":self.oe_name,
             "center":self.center,
             "pitch": self.pitch,
@@ -88,17 +88,16 @@ class OWDoubleParaboloidLens(OWOpticalElement):
             "zmax": self.zmax,
                 }
 
-        return self.xrtcode_template().format_map(xrtcode_parameters)
+    def get_xrt_code(self):
+        return self.xrtcode_template().format_map(self.xrtcode_parameters())
 
     def xrtcode_template(self):
         return \
 """
-import numpy as np
-from xrt.backends.raycing import BeamLine
 from xrt.backends.raycing.oes import DoubleParaboloidLens
 from xrt.backends.raycing.materials import Material
-component = DoubleParaboloidLens(
-    bl=BeamLine(),
+bl.{name} = DoubleParaboloidLens(
+    bl,
     name='{name}',
     center={center},
     pitch={pitch},
@@ -110,17 +109,15 @@ component = DoubleParaboloidLens(
     )                             
 """
 
-
-
     def send_data(self):
         try:
             self.check_data()
             if self.xrt_data is None:
-                out_xrt_data = XRTData()
+                out_xrt_data = XRTData("", {})
             else:
                 out_xrt_data = self.xrt_data.duplicate()
 
-            out_xrt_data.append(self.get_xrt_code())
+            out_xrt_data.append(self.get_xrt_code(), self.xrtcode_parameters())
 
             self.send("XRTData", out_xrt_data)
         except Exception as e:

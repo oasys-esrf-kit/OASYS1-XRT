@@ -58,6 +58,8 @@ class OWUndulatorLightSource(OWWidget, WidgetDecorator):
     eSpread = Setting(0.0)  # %
     eSigmaX = Setting(0.0) # um
     eSigmaZ = Setting(0.0) # um
+    xPrimeMax = Setting(0.1) # mrad
+    zPrimeMax = Setting(0.1) # mrad
     distE = Setting("eV")
     targetE = Setting("[18070.0, 1]")
     eMin    = Setting(17000.0)
@@ -151,6 +153,16 @@ class OWUndulatorLightSource(OWWidget, WidgetDecorator):
                           valueType=float,
                           orientation="horizontal")
 
+        oasysgui.lineEdit(self.tab_bas, self, "xPrimeMax", "Max acceptance angle H [urad]: ",
+                          labelWidth=250,
+                          valueType=float,
+                          orientation="horizontal")
+
+        oasysgui.lineEdit(self.tab_bas, self, "zPrimeMax", "Max acceptance angle V [urad]: ",
+                          labelWidth=250,
+                          valueType=float,
+                          orientation="horizontal")
+
         oasysgui.lineEdit(self.tab_bas, self, "period", "Period [mm]: ",
                           labelWidth=250,
                           valueType=float,
@@ -200,9 +212,9 @@ class OWUndulatorLightSource(OWWidget, WidgetDecorator):
     def update_xrtcode(self):
         self.xrtcode_id.setText(self.get_xrt_code())
 
-    def get_xrt_code(self):
-
-        xrtcode_parameters = {
+    def xrtcode_parameters(self):
+        return {
+            "class_name":"Undulator",
             "name":self.source_name,
             "center":self.center,
             "period":self.period,
@@ -219,17 +231,19 @@ class OWUndulatorLightSource(OWWidget, WidgetDecorator):
             "eMin":self.eMin,
             "eMax":self.eMax,
             "nrays":self.nrays,
+            "xPrimeMax":self.xPrimeMax,
+            "zPrimeMax":self.zPrimeMax,
                 }
 
-        return self.xrtcode_template().format_map(xrtcode_parameters)
+    def get_xrt_code(self):
+        return self.xrtcode_template().format_map(self.xrtcode_parameters())
 
     def xrtcode_template(self):
         return \
 """
-from xrt.backends.raycing import BeamLine
 from xrt.backends.raycing.sources import Undulator
-component = Undulator(
-    BeamLine(),
+bl.{name} = Undulator(
+    bl,
     name="{name}",
     center={center},
     period={period},
@@ -241,6 +255,10 @@ component = Undulator(
     eEspread={eEspread},
     eSigmaX={eSigmaX},
     eSigmaZ={eSigmaZ},
+    xPrimeMax={xPrimeMax},  # in mrad, to match accepting slit
+    zPrimeMax={zPrimeMax},  # in mrad, to match accepting slit
+    xPrimeMaxAutoReduce=False,
+    zPrimeMaxAutoReduce=False,
     distE="{distE}",
     targetE={targetE},
     eMin={eMin},
@@ -285,7 +303,7 @@ component = Undulator(
         try:
             self.check_data()
 
-            self.send("XRTData", XRTData(component=self.get_xrt_code()))
+            self.send("XRTData", XRTData(component=self.get_xrt_code(), parameters=self.xrtcode_parameters()))
 
         except Exception as e:
             QMessageBox.critical(self, "Error", str(e.args[0]), QMessageBox.Ok)

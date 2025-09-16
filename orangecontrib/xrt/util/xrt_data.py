@@ -2,34 +2,39 @@ import os, copy, numpy
 # from shadow4.beam.s4_beam import S4Beam
 
 class XRTData:
-    def __init__(self, component=None):
+    def __init__(self, component: str, parameters: dict):
+
 
         if isinstance(component, type(None)):
             self.__components = []
+            self.__parameters = []
         elif isinstance(component, list):
             self.__components = component
+            self.__parameters = parameters
         else:
             self.__components = [component]
+            self.__parameters = [parameters]
 
     def duplicate(self):
         return copy.deepcopy(self)
 
-    def append(self, component):
+    def append(self, component, parameters):
         self.__components.append(component)
+        self.__parameters.append(parameters)
 
     def number_of_components(self):
         return len(self.__components)
 
     def components(self):
-        return self.__components
+        return self.__components, self.__parameters
 
     def component(self, index):
-        return self.components()[index]
+        return self.__components[index], self.__parameters[index]
 
     def info(self):
         txt = ""
         for i in range(self.number_of_components()):
-            txt += ("\n>> %d " % i) + repr(type(self.component(i)))
+            txt += ("\n>> %d " % i) + repr(type(self.__components[i]))
         return txt
 
 
@@ -70,12 +75,12 @@ xrt_component = Screen(
     )
 """
 
-    oo = XRTData(component=txt1)
+    oo = XRTData(txt1, {})
     print("N: ", oo.number_of_components())
     print("info: \n", oo.info())
     # print("index 0: \n", oo.component(0))
 
-    oo.append(txt2)
+    oo.append(txt2, {})
     print("N: ", oo.number_of_components())
     print("info: \n", oo.info())
     print("index 1: \n", oo.component(1))

@@ -241,7 +241,6 @@ class OWRunner(widget.OWWidget):
         txt = ""
         txt += "def build_beamline(name=''):\n"
         txt += "\n"
-        txt += indent + "from xrt.backends.raycing import BeamLine\n"
         txt += indent + "bl = BeamLine()\n"
         txt += indent + "bl.name = name\n"
         txt += "\n"
@@ -251,16 +250,15 @@ class OWRunner(widget.OWWidget):
             return txt
 
         for i in range(self.input_data.number_of_components()):
-            txt_i = self.input_data.component(i)
+            txt_i, dict_i = self.input_data.component(i)
             txt_i_indented = "\n".join(indent + line for line in txt_i.splitlines())
 
             txt += "\n"
             txt += indent + "#\n"
-            txt += indent + "# Component index: %d\n" % i
+            txt += indent + "# Component index: %d (%s)\n" % (i, dict_i["name"])
             txt += indent + "#\n"
             txt += txt_i_indented
             txt += "\n"
-            txt += indent + "setattr(bl, component.name, component)\n"
 
         txt += "\n"
         txt += indent + "#\n"
@@ -287,59 +285,48 @@ class OWRunner(widget.OWWidget):
             txt += indent + "## ERROR No XRTData available ##\n"
             return txt
 
+        print(">>>>>>>>>>>>>>>>>>>>>> number_of_components: ", self.input_data.number_of_components())
         for i in range(self.input_data.number_of_components()):
-            txt_i = self.input_data.component(i)
-            namespace = dict()
-            try:
-                exec(txt_i, namespace)
-                component = namespace["component"]
+            txt_i, dict_i = self.input_data.component(i)
+            if 1: # try:
+
 
                 txt += "\n"
                 txt += indent + "#\n"
-                txt += indent + "# Component index: %d (%s)\n" % (i, component.name)
+                txt += indent + "# Component index: %d (%s)\n" % (i, dict_i["name"])
                 txt += indent + "#\n"
-                #
-                # needs local access to components... TO BE UPDATED!
-                #
-                from xrt.backends.raycing.sources import Undulator
-                from xrt.backends.raycing.screens import Screen
-                from xrt.backends.raycing.oes import Plate
-                from xrt.backends.raycing.apertures import RectangularAperture
-                from orangecontrib.xrt.util.toroid_mirror_distorted import ToroidMirrorDistorted # TODO: use native XRT
-                from xrt.backends.raycing.oes import DoubleParaboloidLens
 
-                if isinstance(component, Undulator):
-                    txt += indent +  "component = bl.%s\n" % component.name
+                print(">>>>>>>>>>>> class_name: ", dict_i["class_name"])
+                if dict_i["class_name"] == "Undulator":
+                    txt += indent +  "component = bl.%s\n" % dict_i["name"]
                     txt += indent +  "beam = component.shine()\n"
                     txt += indent +  'if dump_beams_flag: np.save("%s%s_%02d.npy" % (dump_beams_folder, component.name, REPETITION), beam)\n'
-                elif isinstance(component, Screen):
-                    txt += indent +  "component = bl.%s\n" % component.name
+                elif dict_i["class_name"] == "Screen":
+                    txt += indent +  "component = bl.%s\n" % dict_i["name"]
                     txt += indent +  "beam_at_screen = component.expose(beam)\n"
                     txt += indent +  "beam_at_screens[component.name] = beam_at_screen\n"
                     txt += indent +  'if dump_beams_flag: np.save("%s%s_%02d.npy" % (dump_beams_folder, component.name, REPETITION), beam)\n'
-                elif isinstance(component, DoubleParaboloidLens):
-                    txt += indent +  "component = bl.%s\n" % component.name
+                elif dict_i["class_name"] == "DoubleParaboloidLens":
+                    txt += indent +  "component = bl.%s\n" % dict_i["name"]
                     txt += indent +  "beam, _, _ = component.multiple_refract(beam) # WARNING: NOT STANDARD: output beam is returned!! \n"
                     txt += indent +  'if dump_beams_flag: np.save("%s%s_%02d.npy" % (dump_beams_folder, component.name, REPETITION), beam)\n'
-                elif isinstance(component, Plate):
-                    txt += indent +  "component = bl.%s\n" % component.name
-                    txt += indent +  "_, _, _ = component.double_refract(beam)\n"
+                elif dict_i["class_name"] == "Plate":
+                    txt += indent +  "component = bl.%s\n" % dict_i["name"]
+                    txt += indent +  "beam, _, _ = component.double_refract(beam)\n"
                     txt += indent +  'if dump_beams_flag: np.save("%s%s_%02d.npy" % (dump_beams_folder, component.name, REPETITION), beam)\n'
-                elif isinstance(component, RectangularAperture):
-                    txt += indent +  "component = bl.%s\n" % component.name
+                elif dict_i["class_name"] == "RectangularAperture":
+                    txt += indent +  "component = bl.%s\n" % dict_i["name"]
                     txt += indent +  "_ = component.propagate(beam)\n"
                     txt += indent +  'if dump_beams_flag: np.save("%s%s_%02d.npy" % (dump_beams_folder, component.name, REPETITION), beam)\n'
-                elif isinstance(component, ToroidMirrorDistorted):
-                    txt += indent +  "component = bl.%s\n" % component.name
+                elif dict_i["class_name"] == "ToroidMirrorDistorted":
+                    txt += indent +  "component = bl.%s\n" % dict_i["name"]
                     txt += indent +  "beam, _ = component.reflect(beam) # WARNING: NOT STANDARD: output beam is returned!!\n"
                     txt += indent +  'if dump_beams_flag: np.save("%s%s_%02d.npy" % (dump_beams_folder, component.name, REPETITION), beam)\n'
-
-
                 else:
                     txt += indent +  "# <<<ERROR>>> not implemented component.\n"
-            except Exception as exception:
-                QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
-                if self.IS_DEVELOP: raise exception
+            # except Exception as exception:
+            #     QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
+            #     if self.IS_DEVELOP: raise exception
 
         txt += "\n"
 
@@ -349,6 +336,7 @@ class OWRunner(widget.OWWidget):
         txt += indent + 'dt = time.time() - t0\n'
         txt += indent + 'print("Time needed to create source and trace system %.3f sec" % dt)\n'
         txt += indent + 'REPETITION += 1\n'
+        txt += indent +  'if showIn3D: bl.prepare_flow()\n'
         txt += indent + "return beam_at_screens\n"
 
         return txt
@@ -360,11 +348,17 @@ import os
 import time
 import numpy as np
 from scipy.signal import savgol_filter
+
+import sys; sys.path.append(os.path.join('..', '..', '..'))  # analysis:ignore
 import xrt
 
 from xrt.backends.raycing import BeamLine
+from xrt.backends.raycing.sources import BeamProxy
+
 from xrt.plotter import XYCAxis, XYCPlot
 from xrt.runner import run_ray_tracing
+
+showIn3D = False
 
 #
 # build_beamline_code
@@ -493,10 +487,9 @@ run_ray_tracing(plots=plots,
 
 if __name__ == "__main__":
     txt1 = """
-from xrt.backends.raycing import BeamLine
 from xrt.backends.raycing.sources import Undulator
-component = Undulator(
-    BeamLine(),
+bl.u17 = Undulator(
+    bl,
     name="u17",
     center=[0,1250,0],
     period=17.0,
@@ -517,17 +510,16 @@ component = Undulator(
 """
 
     txt2 = """
-from xrt.backends.raycing import BeamLine
 from xrt.backends.raycing.screens import Screen
-component = Screen(
-    BeamLine(),
+bl.sample_screen = Screen(
+    bl,
     name="sample_screen",
     center=[0, 56289, 0],
     )
 """
 
-    oo = XRTData(component=txt1)
-    oo.append(txt2)
+    oo = XRTData(txt1, {"class_name":"Undulator", "name":"u17"})
+    oo.append(txt2, {"class_name":"Screen", "name":"sample_screen"})
 
     a = QApplication(sys.argv)
     ow = OWRunner()
