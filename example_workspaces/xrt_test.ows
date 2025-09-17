@@ -4,21 +4,19 @@
 		<node id="0" name="Undulator Light Source" qualified_name="orangecontrib.syned.widgets.light_sources.ow_undulator_light_source.OWUndulatorLightSource" project_name="OASYS1-SYNED" version="" title="Undulator Light Source" position="(324.0, 291.0)" />
 		<node id="1" name="Screen" qualified_name="orangecontrib.syned.widgets.beamline_elements.ow_screen.OWScreen" project_name="OASYS1-SYNED" version="" title="Screen" position="(581.0, 292.0)" />
 		<node id="2" name="Syned File Writer" qualified_name="orangecontrib.syned.widgets.tools.ow_file_writer.FileWriter" project_name="OASYS1-SYNED" version="" title="Syned File Writer" position="(854.0, 288.0)" />
-		<node id="3" name="Screen" qualified_name="orangecontrib.xrt.widgets.beamline_elements.ow_screen.OWScreen" project_name="OASYS1-XRT" version="" title="sample_screen" position="(558.0, 470.0)" />
+		<node id="3" name="Screen" qualified_name="orangecontrib.xrt.widgets.beamline_elements.ow_screen.OWScreen" project_name="OASYS1-XRT" version="" title="sample_screen" position="(559.0, 471.0)" />
 		<node id="4" name="Undulator Light Source" qualified_name="orangecontrib.xrt.widgets.light_sources.ow_undulator_light_source.OWUndulatorLightSource" project_name="OASYS1-XRT" version="" title="Undulator Light Source" position="(338.0, 473.0)" />
-		<node id="5" name="ESRF-EBS ID Light Source" qualified_name="orangecontrib.esrf.syned.widgets.extension.ow_ebs.OWEBS" project_name="OASYS1-ESRF-Extensions" version="" title="ESRF-EBS ID Light Source" position="(128.0, 377.0)" />
-		<node id="6" name="Python Script" qualified_name="oasys.widgets.tools.ow_python_script.OWPythonScript" project_name="OASYS1" version="" title="Python Script" position="(628.0, 657.0)" />
-		<node id="7" name="XRT Runner Python Script" qualified_name="orangecontrib.xrt.widgets.tools.ow_xrt_runner.OWRunner" project_name="OASYS1-XRT" version="" title="XRT Runner Python Script" position="(796.0, 468.0)" />
-		<node id="8" name="Python Script" qualified_name="oasys.widgets.tools.ow_python_script.OWPythonScript" project_name="OASYS1" version="" title="Python Script" position="(415.0, 650.0)" />
+		<node id="5" name="Python Script" qualified_name="oasys.widgets.tools.ow_python_script.OWPythonScript" project_name="OASYS1" version="" title="Python Script" position="(629.0, 657.0)" />
+		<node id="6" name="XRT Runner Python Script" qualified_name="orangecontrib.xrt.widgets.tools.ow_xrt_runner.OWRunner" project_name="OASYS1-XRT" version="" title="XRT Runner Python Script" position="(796.0, 468.0)" />
+		<node id="7" name="Python Script" qualified_name="oasys.widgets.tools.ow_python_script.OWPythonScript" project_name="OASYS1" version="" title="Python Script" position="(415.0, 650.0)" />
 	</nodes>
 	<links>
 		<link id="0" source_node_id="0" sink_node_id="1" source_channel="SynedData" sink_channel="SynedData" enabled="true" />
 		<link id="1" source_node_id="1" sink_node_id="2" source_channel="SynedData" sink_channel="SynedBeamline" enabled="true" />
-		<link id="2" source_node_id="5" sink_node_id="4" source_channel="SynedData" sink_channel="SynedData" enabled="false" />
-		<link id="3" source_node_id="4" sink_node_id="3" source_channel="XRTData" sink_channel="XRTData" enabled="true" />
-		<link id="4" source_node_id="3" sink_node_id="6" source_channel="XRTData" sink_channel="in_object_1" enabled="true" />
-		<link id="5" source_node_id="3" sink_node_id="7" source_channel="XRTData" sink_channel="XRTData" enabled="true" />
-		<link id="6" source_node_id="4" sink_node_id="8" source_channel="XRTData" sink_channel="in_object_1" enabled="true" />
+		<link id="2" source_node_id="4" sink_node_id="3" source_channel="XRTData" sink_channel="XRTData" enabled="true" />
+		<link id="3" source_node_id="3" sink_node_id="5" source_channel="XRTData" sink_channel="in_object_1" enabled="true" />
+		<link id="4" source_node_id="3" sink_node_id="6" source_channel="XRTData" sink_channel="XRTData" enabled="true" />
+		<link id="5" source_node_id="4" sink_node_id="7" source_channel="XRTData" sink_channel="in_object_1" enabled="true" />
 	</links>
 	<annotations />
 	<thumbnail />
@@ -56,65 +54,40 @@ jANzaXCUjA5fdW5waWNrbGVfdHlwZZSTlIwMUHlRdDUuUXRDb3JllIwKUUJ5dGVBcnJheZRDQgHZ
 0MsAAwAAAAAE2QAAAd8AAAcmAAACkgAABNkAAAHfAAAHJgAAApIAAAAAAAAAAAeAAAAE2QAAAd8A
 AAcmAAACkpSFlIeUUpSMD3N5bmVkX2ZpbGVfbmFtZZSMDHRtcF94cnQuanNvbpR1Lg==
 </properties>
-		<properties node_id="3" format="pickle">gASV/gAAAAAAAAB9lCiMBmNlbnRlcpSMDVswLCA1NjI4OSwgMF2UjBBpc19hdXRvbWF0aWNfcnVu
-lIiMB29lX25hbWWUjA1zYW1wbGVfc2NyZWVulIwTc2F2ZWRXaWRnZXRHZW9tZXRyeZSMA3NpcJSM
-Dl91bnBpY2tsZV90eXBllJOUjAxQeVF0NS5RdENvcmWUjApRQnl0ZUFycmF5lENCAdnQywADAAAA
-AAOEAAABQwAABVkAAAQXAAADhAAAAUMAAAVZAAAEFwAAAAAAAAAAB4AAAAOEAAABQwAABVkAAAQX
-lIWUh5RSlIwFc2hhcGWUSwCMDXN1cmZhY2Vfc2hhcGWUSwB1Lg==
+		<properties node_id="3" format="pickle">gASVMwEAAAAAAAB9lCiMBmNlbnRlcpSMDVswLCA1NjI4OSwgMF2UjBBpc19hdXRvbWF0aWNfcnVu
+lIiMD2xpbWl0c19mb3JfcGxvdJSMDy0xMDAsMTAwLC01MCw1MJSMB29lX25hbWWUjA1zYW1wbGVf
+c2NyZWVulIwTc2F2ZWRXaWRnZXRHZW9tZXRyeZSMA3NpcJSMDl91bnBpY2tsZV90eXBllJOUjAxQ
+eVF0NS5RdENvcmWUjApRQnl0ZUFycmF5lENCAdnQywADAAAAAAOEAAABQwAABVkAAAQXAAADhAAA
+AUMAAAVZAAAEFwAAAAAAAAAAB4AAAAOEAAABQwAABVkAAAQXlIWUh5RSlIwFc2hhcGWUSwCMDXN1
+cmZhY2Vfc2hhcGWUSwCMDHVzZV9mb3JfcGxvdJRLAXUu
 </properties>
-		<properties node_id="4" format="pickle">gASVggEAAAAAAAB9lCiMBmNlbnRlcpSMClswLDEyNTAsMF2UjAVkaXN0RZSMAmVWlIwCZUWUR0AY
+		<properties node_id="4" format="pickle">gASVrAEAAAAAAAB9lCiMBmNlbnRlcpSMClswLDEyNTAsMF2UjAVkaXN0RZSMAmVWlIwCZUWUR0AY
 AAAAAAAAjAJlSZRHP8mZmZmZmZqMBGVNYXiUR0DSEQAAAAAAjARlTWlulEdA0JoAAAAAAIwHZVNp
 Z21hWJRHQD4AAAAAAACMB2VTaWdtYVqUR0AUzMzMzMzNjAdlU3ByZWFklEc/Ts1KoQ4CIYwBbpRL
 dYwFbnJheXOUTSBOjAZwZXJpb2SUR0AxAAAAAAAAjBNzYXZlZFdpZGdldEdlb21ldHJ5lIwDc2lw
 lIwOX3VucGlja2xlX3R5cGWUk5SMDFB5UXQ1LlF0Q29yZZSMClFCeXRlQXJyYXmUQ0IB2dDLAAMA
 AAAACVsAAAFcAAALJgAABBcAAAlbAAABXAAACyYAAAQXAAAAAQAAAAAHgAAACVsAAAFcAAALJgAA
-BBeUhZSHlFKUjAtzb3VyY2VfbmFtZZSMA3UxN5SMB3RhcmdldEWUjAtbMTgwNzAuMCwxXZR1Lg==
+BBeUhZSHlFKUjAtzb3VyY2VfbmFtZZSMA3UxN5SMB3RhcmdldEWUjAtbMTgwNzAuMCwxXZSMCXhQ
+cmltZU1heJRHP7mZmZmZmZqMCXpQcmltZU1heJRHP7mZmZmZmZp1Lg==
 </properties>
-		<properties node_id="5" format="pickle">gASVXwUAAAAAAAB9lCiMDEtfaG9yaXpvbnRhbJRHAAAAAAAAAACMCktfdmVydGljYWyURz/eaQV9
-F4LUjAJhMJSMBjEuNjg2MZSMAmExlIwFMS4wMDSUjAJhMpSMAJSMAmEzlGgIjAJhNJRoCIwCYTWU
-aAiMAmE2lGgIjAthdXRvX2VuZXJneZSMFW51bXB5LmNvcmUubXVsdGlhcnJheZSMBnNjYWxhcpST
-lIwFbnVtcHmUjAVkdHlwZZSTlIwCZjiUiYiHlFKUKEsDjAE8lE5OTkr/////Sv////9LAHSUYkMI
-TDeJQYCl0UCUhpRSlIwUYXV0b19oYXJtb25pY19udW1iZXKUSwGMDGVic19pZF9pbmRleJRLDIwV
-ZWxlY3Ryb25fYmVhbV9hbHBoYV9olEe/2MinoOQI0YwVZWxlY3Ryb25fYmVhbV9hbHBoYV92lEe/
-7/M4XnGUNYwUZWxlY3Ryb25fYmVhbV9iZXRhX2iUR0AfvtGKVKm1jBRlbGVjdHJvbl9iZWFtX2Jl
-dGFfdpRHQBU1VPNXoCiMGmVsZWN0cm9uX2JlYW1fZGl2ZXJnZW5jZV9olEc+0vJ6djLLJYwaZWxl
-Y3Ryb25fYmVhbV9kaXZlcmdlbmNlX3aURz7AR5Qc5sNUjBllbGVjdHJvbl9iZWFtX2VtaXR0YW5j
-ZV9olEc941sjDyCKyowZZWxlY3Ryb25fYmVhbV9lbWl0dGFuY2VfdpRHPaX9f+F5ZJWME2VsZWN0
-cm9uX2JlYW1fZXRhX2iURz9XxiqLeztNjBNlbGVjdHJvbl9iZWFtX2V0YV92lEc8WNctvpj89IwU
-ZWxlY3Ryb25fYmVhbV9ldGFwX2iUR77VPrOdkglYjBRlbGVjdHJvbl9iZWFtX2V0YXBfdpRHvCRV
-xjTRFYSMFGVsZWN0cm9uX2JlYW1fc2l6ZV9olEc/AYr43yfX24wUZWxlY3Ryb25fYmVhbV9zaXpl
-X3aURz7ein55ervDjBZlbGVjdHJvbl9lbmVyZ3lfaW5fR2VWlEdAGAAAAAAAAIwWZWxlY3Ryb25f
-ZW5lcmd5X3NwcmVhZJRHP1BiTdLxqfyMB2dhcF9tYXiUR0A+AAAAAAAAjAdnYXBfbWlulEdAGAAA
-AAAAAIwGZ2FwX21tlGgQaBZDCPyp8dJNoiJAlIaUUpSMDGhhcm1vbmljX21heJRLA4wLbW9tZW50
-X3hweHCURz22b+twI5i4jAltb21lbnRfeHiURz4TPAfhPR2WjAptb21lbnRfeHhwlEc9zfqEqJZ/
-RIwLbW9tZW50X3lweXCURz2QkGPsNZNcjAltb21lbnRfeXmURz3NJgRQ3AqUjAptb21lbnRfeXlw
-lEc9pfS3ogxKg4wRbnVtYmVyX29mX2J1bmNoZXOURwAAAAAAAAAAjBFudW1iZXJfb2ZfcGVyaW9k
-c5RHQF1paHKwIMWMDXBlcmlvZF9sZW5ndGiURz+RaHKwIMScjA9wb3dfZGVuc19zY3JlZW6UR0A+
-AAAAAAAAjAxyaW5nX2N1cnJlbnSURz/JmZmZmZmajBNzYXZlZFdpZGdldEdlb21ldHJ5lIwDc2lw
-lIwOX3VucGlja2xlX3R5cGWUk5SMDFB5UXQ1LlF0Q29yZZSMClFCeXRlQXJyYXmUQ0IB2dDLAAMA
-AAAACPEAAAG0AAAOGAAABJQAAAjxAAAB2QAADhgAAASUAAAAAQAAAAAHgAAACPEAAAHZAAAOGAAA
-BJSUhZSHlFKUjBJ0eXBlX29mX3Byb3BlcnRpZXOUSwGMJHR5cGVfb2ZfcHJvcGVydGllc19pbml0
-aWFsX3NlbGVjdGlvbpRLBnUu
-</properties>
-		<properties node_id="6" format="pickle">gASV8QEAAAAAAAB9lCiMDGF1dG9fZXhlY3V0ZZSJjBJjdXJyZW50U2NyaXB0SW5kZXiUSwCMCWZv
+		<properties node_id="5" format="pickle">gASV8QEAAAAAAAB9lCiMDGF1dG9fZXhlY3V0ZZSJjBJjdXJyZW50U2NyaXB0SW5kZXiUSwCMCWZv
 bnRfc2l6ZZRLBIwRbGlicmFyeUxpc3RTb3VyY2WUXZSMJG9hc3lzLndpZGdldHMudG9vbHMub3df
 cHl0aG9uX3NjcmlwdJSMBlNjcmlwdJSTlCmBlH2UKIwEbmFtZZSMDUhlbGxvIHdvcmxkIDGUjAZz
 Y3JpcHSUjIZvbyA9IGluX29iamVjdF8xCnByaW50KG9vKQpwcmludCgiTjogIiwgb28ubnVtYmVy
 X29mX2NvbXBvbmVudHMoKSkKcHJpbnQoImluZm86IFxuIiwgb28uaW5mbygpKQoKcHJpbnQoImlu
 ZGV4IDE6IFxuIiwgb28uY29tcG9uZW50KDEpKZSMBWZsYWdzlEsAjAhmaWxlbmFtZZROdWJhjBNz
 YXZlZFdpZGdldEdlb21ldHJ5lIwDc2lwlIwOX3VucGlja2xlX3R5cGWUk5SMDFB5UXQ1LlF0Q29y
-ZZSMClFCeXRlQXJyYXmUQ0IB2dDLAAMAAAAAA68AAAC7AAAGzgAAAxIAAAOvAAAAuwAABs4AAAMS
+ZZSMClFCeXRlQXJyYXmUQ0IB2dDLAAMAAAAAA68AAACWAAAGzgAAAxIAAAOvAAAAuwAABs4AAAMS
 AAAAAAAAAAAHgAAAA68AAAC7AAAGzgAAAxKUhZSHlFKUjA1zcGxpdHRlclN0YXRllE51Lg==
 </properties>
-		<properties node_id="7" format="pickle">gASVcwEAAAAAAAB9lCiMDWJlYW1saW5lX25hbWWUjA9teV94cnRfYmVhbWxpbmWUjA9kdW1wX2Jl
+		<properties node_id="6" format="pickle">gASVOgEAAAAAAAB9lCiMDWJlYW1saW5lX25hbWWUjA9teV94cnRfYmVhbWxpbmWUjA9kdW1wX2Jl
 YW1zX2ZsYWeUSwGMEGR1bXBfc2NvcmVzX2ZsYWeUSwGMEGlzX2F1dG9tYXRpY19ydW6UiIwKcmVw
 ZXRpdGlvbpRLA4wTc2F2ZWRXaWRnZXRHZW9tZXRyeZSMA3NpcJSMDl91bnBpY2tsZV90eXBllJOU
-jAxQeVF0NS5RdENvcmWUjApRQnl0ZUFycmF5lENCAdnQywADAAAAAAiSAAABbwAADbkAAAQqAAAI
-kgAAAW8AAA25AAAEKgAAAAEAAAAAB4AAAAiSAAABbwAADbkAAAQqlIWUh5RSlIwPc2NyZWVuc190
-b19wbG90lF2UjA1zYW1wbGVfc2NyZWVulGGMEHNjcmlwdF9maWxlX2ZsYWeUSwCMEHNjcmlwdF9m
-aWxlX25hbWWUjAZ0bXAucHmUjAtzaXplc19pbl91bZRdlE0QJ2F1Lg==
+jAxQeVF0NS5RdENvcmWUjApRQnl0ZUFycmF5lENCAdnQywADAAAAAAGgAAABZAAABscAAAQfAAAB
+oAAAAWQAAAbHAAAEHwAAAAAAAAAAB4AAAAGgAAABZAAABscAAAQflIWUh5RSlIwQc2NyaXB0X2Zp
+bGVfZmxhZ5RLAIwQc2NyaXB0X2ZpbGVfbmFtZZSMBnRtcC5weZR1Lg==
 </properties>
-		<properties node_id="8" format="pickle">gASV8gEAAAAAAAB9lCiMDGF1dG9fZXhlY3V0ZZSJjBJjdXJyZW50U2NyaXB0SW5kZXiUSwCMCWZv
+		<properties node_id="7" format="pickle">gASV8gEAAAAAAAB9lCiMDGF1dG9fZXhlY3V0ZZSJjBJjdXJyZW50U2NyaXB0SW5kZXiUSwCMCWZv
 bnRfc2l6ZZRLBIwRbGlicmFyeUxpc3RTb3VyY2WUXZSMJG9hc3lzLndpZGdldHMudG9vbHMub3df
 cHl0aG9uX3NjcmlwdJSMBlNjcmlwdJSTlCmBlH2UKIwEbmFtZZSMDUhlbGxvIHdvcmxkIDCUjAZz
 Y3JpcHSUjIdvbyA9IGluX29iamVjdF8xCnByaW50KG9vKQpwcmludCgiTjogIiwgb28ubnVtYmVy

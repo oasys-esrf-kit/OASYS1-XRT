@@ -49,7 +49,7 @@ except AttributeError:
     from setuptools import find_packages, setup
 
 NAME = 'OASYS1-XRT'
-VERSION = '0.0.02'
+VERSION = '0.0.03'
 ISRELEASED = False
 
 DESCRIPTION = 'XRT'

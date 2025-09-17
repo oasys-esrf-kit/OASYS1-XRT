@@ -14,13 +14,11 @@ class OWScreen(OWOpticalElement):
     icon = "icons/screen.png"
     priority = 4
 
-    oe_name         = Setting("my_screen")
-    center  = Setting("[0,0,0]")
-    use_for_plot = Setting(0)
-
+    oe_name = Setting("my_screen")
+    center = Setting("[0,0,0]")
 
     def __init__(self):
-        super().__init__()
+        super().__init__(show_plot_box=True)
 
     def populate_tab_setting(self):
         oasysgui.lineEdit(self.tab_bas, self, "oe_name", "O.E. Name", labelWidth=150, valueType=str, orientation="horizontal")
@@ -30,10 +28,6 @@ class OWScreen(OWOpticalElement):
                           valueType=str,
                           orientation="horizontal")
 
-        gui.comboBox(self.tab_bas, self, "use_for_plot", label="Create a plot at this position",
-                     items=["No", "Yes"], labelWidth=300,
-                     sendSelectedValue=False, orientation="horizontal")
-
     def draw_specific_box(self):
         pass
 
@@ -42,11 +36,12 @@ class OWScreen(OWOpticalElement):
 
     def xrtcode_parameters(self):
         if " " in self.oe_name:
-            QMessageBox.critical(self, "Error", "component names cannot have blanks: %s" % self.source_name, QMessageBox.Ok)
+            QMessageBox.critical(self, "Error", "component names cannot have blanks: %s" % self.oe_name, QMessageBox.Ok)
 
         return {
             "class_name":"Screen",
             "use_for_plot": self.use_for_plot,
+            "limits_for_plot": self.limits_for_plot,
             "name":self.oe_name,
             "center":self.center,
                 }

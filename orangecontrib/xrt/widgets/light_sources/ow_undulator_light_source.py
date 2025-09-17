@@ -214,7 +214,7 @@ class OWUndulatorLightSource(OWWidget, WidgetDecorator):
 
     def xrtcode_parameters(self):
         if " " in self.source_name:
-            QMessageBox.critical(self, "Error", "component names cannot have blanks: %s" % self.oe_name, QMessageBox.Ok)
+            QMessageBox.critical(self, "Error", "component names cannot have blanks: %s" % self.source_name, QMessageBox.Ok)
 
         return {
             "class_name":"Undulator",

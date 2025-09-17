@@ -37,9 +37,6 @@ class OWRunner(widget.OWWidget):
     beamline_name = Setting("my_xrt_beamline")
     repetition = Setting(3)
 
-    # screens_to_plot = Setting("['sample_screen']")
-    # sizes_in_um = Setting("[10000]")
-
 
     script_file_flag = Setting(0)
     script_file_name = Setting("tmp.py")
@@ -113,14 +110,6 @@ class OWRunner(widget.OWWidget):
                           orientation="horizontal", callback=self.refresh_script)
         oasysgui.lineEdit(gen_box, self, "repetition", "Number of repetitions", labelWidth=250, valueType=int,
                           orientation="horizontal", callback=self.refresh_script)
-
-        ###
-        # gen_box = oasysgui.widgetBox(self.controlArea, "Plots", addSpace=False, orientation="vertical", width=self.CONTROL_AREA_WIDTH-5)
-        #
-        # oasysgui.lineEdit(gen_box, self, "screens_to_plot", "List with screens to plot", labelWidth=150, valueType=str,
-        #                   orientation="horizontal", callback=self.refresh_script)
-        # oasysgui.lineEdit(gen_box, self, "sizes_in_um", "List with screen size in um", labelWidth=150, valueType=str,
-        #                   orientation="horizontal", callback=self.refresh_script)
 
         ###
         gen_box = oasysgui.widgetBox(self.controlArea, "Output files", addSpace=False, orientation="vertical", width=self.CONTROL_AREA_WIDTH-5)
@@ -224,9 +213,24 @@ class OWRunner(widget.OWWidget):
         if self.input_data is None: return "# << ERROR No XRDData >>"
 
         screens_to_plot = []
+        limits_to_plot_H = []
+        limits_to_plot_V = []
         for i in range(self.input_data.number_of_components()):
             txt_i, dict_i = self.input_data.component(i)
-            if dict_i["use_for_plot"]: screens_to_plot.append(dict_i["name"])
+            print(">>>>>>>>>>>>>>", dict_i["use_for_plot"])
+            if dict_i["use_for_plot"] == 1:
+                screens_to_plot.append(dict_i["name"])
+                limits_to_plot_H.append(None)
+                limits_to_plot_V.append(None)
+            elif dict_i["use_for_plot"] == 2:
+                screens_to_plot.append(dict_i["name"])
+                if 1: # try:
+                    print("         >>>>>>>>>>>>>>", dict_i["limits_for_plot"])
+                    parts = dict_i["limits_for_plot"].split(",")
+                    limits_to_plot_H.append([float(parts[0]), float(parts[1])])
+                    limits_to_plot_V.append([float(parts[2]), float(parts[3])])
+                # except:
+                #     raise Exception("Plot limits: incorrect syntax")
 
 
         code_parameters = {
@@ -235,7 +239,8 @@ class OWRunner(widget.OWWidget):
             "build_beamline_code": self.input_data.build_beamline_code(),
             "run_process_code": self.input_data.run_process_code(),
             "screens_to_plot": screens_to_plot,
-            "n_screens_to_plot": len(screens_to_plot),
+            "limits_to_plot_H": limits_to_plot_H,
+            "limits_to_plot_V": limits_to_plot_V,
             "dump_beams_flag": self.dump_beams_flag,
             # "sizes_in_um": self.sizes_in_um,
                 }
@@ -274,9 +279,9 @@ showIn3D = False
 {run_process_code}
 
 
-def make_plot(bl, beamName, limits=None, bins=1024, climits=None, cbins=256, ):
-    xaxis = XYCAxis(label='x', limits=limits, unit='um', bins=bins, ppb=int(1024/bins))
-    yaxis = XYCAxis(label='z', limits=limits, unit='um', bins=bins, ppb=int(1024/bins))
+def make_plot(bl, beamName, limitsH=None, limitsV=None, bins=1024, climits=None, cbins=256, ):
+    xaxis = XYCAxis(label='x', limits=limitsH, unit='um', bins=bins, ppb=int(1024/bins))
+    yaxis = XYCAxis(label='z', limits=limitsV, unit='um', bins=bins, ppb=int(1024/bins))
     caxis = XYCAxis(label='energy', limits=climits,
                     unit='eV', bins=cbins, fwhmFormatStr="%.2f", ppb=int(512/cbins))
 
@@ -361,11 +366,12 @@ def main():
         return
     
     screens_to_plot = {screens_to_plot}
-    limits = [None] * {n_screens_to_plot}
+    limitsH = {limits_to_plot_H}
+    limitsV = {limits_to_plot_V}
 
     plots = []
     for i in range(len(screens_to_plot)):
-        plots.append(make_plot(bl, screens_to_plot[i], limits=limits[i], bins=1024, climits=None, cbins=256,))
+        plots.append(make_plot(bl, screens_to_plot[i], limitsH=limitsH[i], limitsV=limitsV[i], bins=1024, climits=None, cbins=256,))
             
     #
     # declare run_process() that makes the tracing
@@ -423,7 +429,7 @@ bl.sample_screen = Screen(
 """
 
     oo = XRTData(txt1, {"class_name":"Undulator", "name":"u17", "use_for_plot":0})
-    oo.append(txt2, {"class_name":"Screen", "name":"sample_screen", "use_for_plot":1})
+    oo.append(txt2, {"class_name":"Screen", "name":"sample_screen", "use_for_plot":2, "limits_for_plot":"-2000,2000,-1500,1500"})
 
     a = QApplication(sys.argv)
     ow = OWRunner()

@@ -39,6 +39,8 @@ class OWOpticalElement(OWWidget, WidgetDecorator):
     want_main_area=0
 
     is_automatic_run = Setting(0)
+    use_for_plot = Setting(0)
+    limits_for_plot = Setting('-100,100,-50,50')
 
     MAX_WIDTH = 460 + 10
     MAX_HEIGHT = 700 + 25
@@ -46,7 +48,7 @@ class OWOpticalElement(OWWidget, WidgetDecorator):
     TABS_AREA_HEIGHT = 625
     CONTROL_AREA_WIDTH = 450
 
-    def __init__(self, show_automatic_box=True):
+    def __init__(self, show_automatic_box=True, show_plot_box=False):
         super().__init__()
 
         self.runaction = widget.OWAction("Send Data", self)
@@ -92,6 +94,19 @@ class OWOpticalElement(OWWidget, WidgetDecorator):
 
         self.draw_specific_box()
 
+        if show_plot_box:
+            limits_box = gui.widgetBox(self.tab_bas, "Plot at run time")
+            gui.comboBox(limits_box, self, "use_for_plot", label="Create a plot at this position",
+                         items=["No", "Yes (auto limits)", "Yes (set limits)"], labelWidth=300,
+                         sendSelectedValue=False, orientation="horizontal", callback=self.set_show_plot_box_visible)
+
+            self.w_limits_box = gui.widgetBox(limits_box)
+            oasysgui.lineEdit(self.w_limits_box, self, "limits_for_plot", "limits in um: H0,H1,V0,V1: ",
+                              labelWidth=180,
+                              valueType=str,
+                              orientation="horizontal")
+            self.set_show_plot_box_visible()
+
     def populate_tab_xrtcode(self, tab_util):
         left_box_0 = oasysgui.widgetBox(tab_util, "XRT code to be sent", addSpace=False, orientation="vertical", height=450)
         gui.button(left_box_0, self, "Update XRT code", callback=self.update_xrtcode)
@@ -104,6 +119,10 @@ class OWOpticalElement(OWWidget, WidgetDecorator):
 
     def draw_specific_box(self):
         raise NotImplementedError()
+
+    def set_show_plot_box_visible(self):
+        self.w_limits_box.setVisible(False)
+        if self.use_for_plot == 2: self.w_limits_box.setVisible(True)
 
     def check_data(self):
         congruence.checkPositiveNumber(self.p, "Distance from previous Continuation Plane")

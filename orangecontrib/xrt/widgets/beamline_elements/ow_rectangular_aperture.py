@@ -18,10 +18,9 @@ class OWRectangularAperture(OWOpticalElement):
     center = Setting("[0,0,0]")
     phg = Setting(1.0)
     pvg = Setting(1.0)
-    use_for_plot = Setting(0)
 
     def __init__(self):
-        super().__init__()
+        super().__init__(show_plot_box=True)
 
     def populate_tab_setting(self):
         oasysgui.lineEdit(self.tab_bas, self, "oe_name", "O.E. Name", labelWidth=150, valueType=str, orientation="horizontal")
@@ -41,10 +40,6 @@ class OWRectangularAperture(OWOpticalElement):
                           valueType=float,
                           orientation="horizontal")
 
-        gui.comboBox(self.tab_bas, self, "use_for_plot", label="Create a plot at this position",
-                     items=["No", "Yes"], labelWidth=300,
-                     sendSelectedValue=False, orientation="horizontal")
-
     def draw_specific_box(self):
         pass
 
@@ -58,6 +53,7 @@ class OWRectangularAperture(OWOpticalElement):
         return {
             "class_name":"RectangularAperture",
             "use_for_plot":self.use_for_plot,
+            "limits_for_plot": self.limits_for_plot,
             "name":self.oe_name,
             "center":self.center,
             "phg": self.phg,
