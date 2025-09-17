@@ -76,8 +76,12 @@ class OWDoubleParaboloidLens(OWOpticalElement):
         pass
 
     def xrtcode_parameters(self):
+        if " " in self.oe_name:
+            QMessageBox.critical(self, "Error", "component names cannot have blanks: %s" % self.oe_name, QMessageBox.Ok)
+
         return {
             "class_name":"DoubleParaboloidLens",
+            "use_for_plot": False,
             "name":self.oe_name,
             "center":self.center,
             "pitch": self.pitch,
@@ -95,7 +99,6 @@ class OWDoubleParaboloidLens(OWOpticalElement):
         return \
 """
 from xrt.backends.raycing.oes import DoubleParaboloidLens
-from xrt.backends.raycing.materials import Material
 bl.{name} = DoubleParaboloidLens(
     bl,
     name='{name}',

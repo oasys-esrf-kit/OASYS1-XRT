@@ -213,8 +213,12 @@ class OWUndulatorLightSource(OWWidget, WidgetDecorator):
         self.xrtcode_id.setText(self.get_xrt_code())
 
     def xrtcode_parameters(self):
+        if " " in self.source_name:
+            QMessageBox.critical(self, "Error", "component names cannot have blanks: %s" % self.oe_name, QMessageBox.Ok)
+
         return {
             "class_name":"Undulator",
+            "use_for_plot": False,
             "name":self.source_name,
             "center":self.center,
             "period":self.period,

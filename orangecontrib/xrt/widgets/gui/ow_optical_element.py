@@ -137,3 +137,6 @@ class OWOpticalElement(OWWidget, WidgetDecorator):
                 self.resetSettings()
             except:
                 pass
+    def prompt_exception(self, exception: Exception):
+        MessageDialog.message(self, str(exception), "Exception occured in OASYS", "critical")
+        if self.IS_DEVELOP: raise exception

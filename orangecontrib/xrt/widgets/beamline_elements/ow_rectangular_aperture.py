@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QMessageBox
 
 from orangewidget.settings import Setting
+from orangewidget import gui
 from oasys.widgets import gui as oasysgui
 
 from orangecontrib.xrt.widgets.gui.ow_optical_element import OWOpticalElement
@@ -17,7 +18,7 @@ class OWRectangularAperture(OWOpticalElement):
     center = Setting("[0,0,0]")
     phg = Setting(1.0)
     pvg = Setting(1.0)
-
+    use_for_plot = Setting(0)
 
     def __init__(self):
         super().__init__()
@@ -40,6 +41,10 @@ class OWRectangularAperture(OWOpticalElement):
                           valueType=float,
                           orientation="horizontal")
 
+        gui.comboBox(self.tab_bas, self, "use_for_plot", label="Create a plot at this position",
+                     items=["No", "Yes"], labelWidth=300,
+                     sendSelectedValue=False, orientation="horizontal")
+
     def draw_specific_box(self):
         pass
 
@@ -47,8 +52,12 @@ class OWRectangularAperture(OWOpticalElement):
         pass
 
     def xrtcode_parameters(self):
+        if " " in self.oe_name:
+            QMessageBox.critical(self, "Error", "component names cannot have blanks: %s" % self.oe_name, QMessageBox.Ok)
+
         return {
             "class_name":"RectangularAperture",
+            "use_for_plot":self.use_for_plot,
             "name":self.oe_name,
             "center":self.center,
             "phg": self.phg,

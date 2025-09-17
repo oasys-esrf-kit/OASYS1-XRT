@@ -37,8 +37,8 @@ class OWRunner(widget.OWWidget):
     beamline_name = Setting("my_xrt_beamline")
     repetition = Setting(3)
 
-    screens_to_plot = Setting("['sample_screen']")
-    sizes_in_um = Setting("[10000]")
+    # screens_to_plot = Setting("['sample_screen']")
+    # sizes_in_um = Setting("[10000]")
 
 
     script_file_flag = Setting(0)
@@ -115,12 +115,12 @@ class OWRunner(widget.OWWidget):
                           orientation="horizontal", callback=self.refresh_script)
 
         ###
-        gen_box = oasysgui.widgetBox(self.controlArea, "Plots", addSpace=False, orientation="vertical", width=self.CONTROL_AREA_WIDTH-5)
-
-        oasysgui.lineEdit(gen_box, self, "screens_to_plot", "List with screens to plot", labelWidth=150, valueType=str,
-                          orientation="horizontal", callback=self.refresh_script)
-        oasysgui.lineEdit(gen_box, self, "sizes_in_um", "List with screen size in um", labelWidth=150, valueType=str,
-                          orientation="horizontal", callback=self.refresh_script)
+        # gen_box = oasysgui.widgetBox(self.controlArea, "Plots", addSpace=False, orientation="vertical", width=self.CONTROL_AREA_WIDTH-5)
+        #
+        # oasysgui.lineEdit(gen_box, self, "screens_to_plot", "List with screens to plot", labelWidth=150, valueType=str,
+        #                   orientation="horizontal", callback=self.refresh_script)
+        # oasysgui.lineEdit(gen_box, self, "sizes_in_um", "List with screen size in um", labelWidth=150, valueType=str,
+        #                   orientation="horizontal", callback=self.refresh_script)
 
         ###
         gen_box = oasysgui.widgetBox(self.controlArea, "Output files", addSpace=False, orientation="vertical", width=self.CONTROL_AREA_WIDTH-5)
@@ -223,13 +223,22 @@ class OWRunner(widget.OWWidget):
     def to_python_code(self):
         if self.input_data is None: return "# << ERROR No XRDData >>"
 
+        screens_to_plot = []
+        for i in range(self.input_data.number_of_components()):
+            txt_i, dict_i = self.input_data.component(i)
+            print(">>>>>>>>>>>>", i , dict_i["name"], dict_i["use_for_plot"])
+            if dict_i["use_for_plot"]: screens_to_plot.append(dict_i["name"])
+
+
         code_parameters = {
             "beamline_name": self.beamline_name,
             "REPETITION": self.repetition,
             "build_beamline_code": self.build_beamline_code(),
             "run_process_code": self.run_process_code(),
-            "screens_to_plot": self.screens_to_plot,
-            "sizes_in_um": self.sizes_in_um,
+            "screens_to_plot": screens_to_plot,
+            "n_screens_to_plot": len(screens_to_plot),
+            "dump_beams_flag": self.dump_beams_flag,
+            # "sizes_in_um": self.sizes_in_um,
                 }
 
         template_code = self.get_template_code()
@@ -256,7 +265,7 @@ class OWRunner(widget.OWWidget):
             txt += "\n"
             txt += indent + "#\n"
             txt += indent + "# Component index: %d (%s)\n" % (i, dict_i["name"])
-            txt += indent + "#\n"
+            txt += indent + "#"
             txt += txt_i_indented
             txt += "\n"
 
@@ -274,59 +283,48 @@ class OWRunner(widget.OWWidget):
         txt += "def run_process(bl):\n"
         txt += "\n"
         txt += indent + "import numpy as np\n"
-        txt += indent + "global REPETITION\n"
-        txt += indent + "global dump_beams_folder, dump_beams_flag\n"
-        txt += indent + "print('REPETITION = %d' % REPETITION)\n"
         txt += indent + "t0 = time.time()\n"
         txt += "\n"
-        txt += indent + "beam_at_screens = dict()\n"
+        txt += indent + "beams_to_plot = dict()\n"
 
         if self.input_data is None:
             txt += indent + "## ERROR No XRTData available ##\n"
             return txt
 
-        print(">>>>>>>>>>>>>>>>>>>>>> number_of_components: ", self.input_data.number_of_components())
         for i in range(self.input_data.number_of_components()):
             txt_i, dict_i = self.input_data.component(i)
-            if 1: # try:
 
+            txt += "\n"
+            txt += indent + "#\n"
+            txt += indent + "# Component index: %d (%s: %s)\n" % (i, dict_i["name"], dict_i["class_name"],)
+            txt += indent + "#\n"
+            if dict_i["class_name"] == "Undulator":
+                txt += indent +  "beam = bl.%s.shine()\n" % dict_i["name"]
+                txt += indent +  'if bl.dump_beams_flag: dump_beam(bl, "%s", beam)\n' % dict_i["name"]
+            elif dict_i["class_name"] == "Screen":
+                txt += indent +  "beam_local = bl.%s.expose(beam)\n" % dict_i["name"]
+                if dict_i["use_for_plot"]:
+                    txt += indent +  "beams_to_plot['%s'] = beam_local\n" % dict_i["name"]
+                txt += indent +  'if bl.dump_beams_flag: dump_beam(bl, "%s", beam)\n' % dict_i["name"]
+            elif dict_i["class_name"] == "DoubleParaboloidLens":
+                txt += indent +  "beam, beam_local1, beam_local2 = bl.%s.multiple_refract(beam)\n" % dict_i["name"]
+                txt += indent +  'if bl.dump_beams_flag: dump_beam(bl, "%s", beam_local1)\n' % (dict_i["name"] + "_1")
+                txt += indent +  'if bl.dump_beams_flag: dump_beam(bl, "%s", beam_local2)\n' % (dict_i["name"] + "_2")
+            elif dict_i["class_name"] == "Plate":
+                txt += indent +  "beam, beam_local1, beam_local2 = bl.%s.double_refract(beam)\n" % dict_i["name"]
+                txt += indent +  'if bl.dump_beams_flag: dump_beam(bl, "%s", beam_local1)\n' % (dict_i["name"] + "_1")
+                txt += indent +  'if bl.dump_beams_flag: dump_beam(bl, "%s", beam_local2)\n' % (dict_i["name"] + "_2")
+            elif dict_i["class_name"] == "RectangularAperture":
+                txt += indent +  "beam_local = bl.%s.propagate(beam)\n" % dict_i["name"]
+                if dict_i["use_for_plot"]:
+                    txt += indent +  "beams_to_plot['%s'] = beam_local\n" % dict_i["name"]
+                txt += indent +  'if bl.dump_beams_flag: dump_beam(bl, "%s", beam_local)\n' % dict_i["name"]
+            elif dict_i["class_name"] == "ToroidMirrorDistorted":
+                txt += indent +  "beam, _ = bl.%s.reflect(beam)\n" % dict_i["name"]
+                txt += indent +  'if bl.dump_beams_flag: dump_beam(bl, "%s", beam)\n' % dict_i["name"]
+            else:
+                txt += indent +  "# <<<ERROR>>> not implemented component.\n"
 
-                txt += "\n"
-                txt += indent + "#\n"
-                txt += indent + "# Component index: %d (%s)\n" % (i, dict_i["name"])
-                txt += indent + "#\n"
-
-                print(">>>>>>>>>>>> class_name: ", dict_i["class_name"])
-                if dict_i["class_name"] == "Undulator":
-                    txt += indent +  "component = bl.%s\n" % dict_i["name"]
-                    txt += indent +  "beam = component.shine()\n"
-                    txt += indent +  'if dump_beams_flag: np.save("%s%s_%02d.npy" % (dump_beams_folder, component.name, REPETITION), beam)\n'
-                elif dict_i["class_name"] == "Screen":
-                    txt += indent +  "component = bl.%s\n" % dict_i["name"]
-                    txt += indent +  "beam_at_screen = component.expose(beam)\n"
-                    txt += indent +  "beam_at_screens[component.name] = beam_at_screen\n"
-                    txt += indent +  'if dump_beams_flag: np.save("%s%s_%02d.npy" % (dump_beams_folder, component.name, REPETITION), beam)\n'
-                elif dict_i["class_name"] == "DoubleParaboloidLens":
-                    txt += indent +  "component = bl.%s\n" % dict_i["name"]
-                    txt += indent +  "beam, _, _ = component.multiple_refract(beam) # WARNING: NOT STANDARD: output beam is returned!! \n"
-                    txt += indent +  'if dump_beams_flag: np.save("%s%s_%02d.npy" % (dump_beams_folder, component.name, REPETITION), beam)\n'
-                elif dict_i["class_name"] == "Plate":
-                    txt += indent +  "component = bl.%s\n" % dict_i["name"]
-                    txt += indent +  "beam, _, _ = component.double_refract(beam)\n"
-                    txt += indent +  'if dump_beams_flag: np.save("%s%s_%02d.npy" % (dump_beams_folder, component.name, REPETITION), beam)\n'
-                elif dict_i["class_name"] == "RectangularAperture":
-                    txt += indent +  "component = bl.%s\n" % dict_i["name"]
-                    txt += indent +  "_ = component.propagate(beam)\n"
-                    txt += indent +  'if dump_beams_flag: np.save("%s%s_%02d.npy" % (dump_beams_folder, component.name, REPETITION), beam)\n'
-                elif dict_i["class_name"] == "ToroidMirrorDistorted":
-                    txt += indent +  "component = bl.%s\n" % dict_i["name"]
-                    txt += indent +  "beam, _ = component.reflect(beam) # WARNING: NOT STANDARD: output beam is returned!!\n"
-                    txt += indent +  'if dump_beams_flag: np.save("%s%s_%02d.npy" % (dump_beams_folder, component.name, REPETITION), beam)\n'
-                else:
-                    txt += indent +  "# <<<ERROR>>> not implemented component.\n"
-            # except Exception as exception:
-            #     QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
-            #     if self.IS_DEVELOP: raise exception
 
         txt += "\n"
 
@@ -335,12 +333,10 @@ class OWRunner(widget.OWWidget):
         txt += indent + "#\n"
         txt += indent + 'dt = time.time() - t0\n'
         txt += indent + 'print("Time needed to create source and trace system %.3f sec" % dt)\n'
-        txt += indent + 'REPETITION += 1\n'
         txt += indent +  'if showIn3D: bl.prepare_flow()\n'
-        txt += indent + "return beam_at_screens\n"
+        txt += indent + "return beams_to_plot\n"
 
         return txt
-
 
     def get_template_code(self):
         return """
@@ -354,6 +350,7 @@ import xrt
 
 from xrt.backends.raycing import BeamLine
 from xrt.backends.raycing.sources import BeamProxy
+from xrt.backends.raycing.materials import Material
 
 from xrt.plotter import XYCAxis, XYCPlot
 from xrt.runner import run_ray_tracing
@@ -371,26 +368,23 @@ showIn3D = False
 {run_process_code}
 
 
-def make_plot(bl, screen, size=100, bins=1024, cbins=256):
-    global dump_scores_folder
+def make_plot(bl, beamName, limits=None, bins=1024, climits=None, cbins=256, ):
+    xaxis = XYCAxis(label='x', limits=limits, unit='um', bins=bins, ppb=int(1024/bins))
+    yaxis = XYCAxis(label='z', limits=limits, unit='um', bins=bins, ppb=int(1024/bins))
+    caxis = XYCAxis(label='energy', limits=climits,
+                    unit='eV', bins=cbins, fwhmFormatStr="%.2f", ppb=int(512/cbins))
 
-    xaxis = XYCAxis(label='x', limits=[-size/2, size/2], unit='um', bins=bins,
-                    ppb=int(1024/bins))
-    yaxis = XYCAxis(label='z', limits=[-size/2, size/2], unit='um', bins=bins,
-                    ppb=int(1024/bins))
-    caxis = XYCAxis(label='energy', limits=[bl.u17.eMin, bl.u17.eMax],
-                    unit='eV', bins=cbins, fwhmFormatStr="%.2f",
-                    ppb=int(512/cbins))
-
-    fname = dump_scores_folder + "/screen_%s.png" % screen
-
-    plot = XYCPlot(beam=screen, xaxis=xaxis, yaxis=yaxis, caxis=caxis, saveName=fname)
-
+    fname = os.path.join(bl.dump_scores_folder, "%s.png" % beamName)
+    plot = XYCPlot(beam=beamName, xaxis=xaxis, yaxis=yaxis, caxis=caxis, saveName=fname)
     return plot
-
-def do_after_script(plots):
-    global dump_scores_folder
-
+    
+def dump_beam(bl, name, beam):
+    n = np.random.randint(1, 100000)
+    path = os.path.join(bl.dump_beams_folder, '%s_%06d' % (name, n))
+    beamToSave = BeamProxy(beam)
+    np.save(path, beamToSave)
+    
+def do_after_script(bl, plots):
     out_str1 = ""
     fwhm_h = np.array([plot.dx for plot in plots])
     fwhm_v = np.array([plot.dy for plot in plots])
@@ -405,11 +399,14 @@ def do_after_script(plots):
 
     epeak = []
     for k, plot in enumerate(plots):
-        fname = dump_scores_folder + "/res_%s_profile_h.txt" % plot.beam
+        fname = os.path.join(bl.dump_scores_folder,
+                             "res_%s_profile_h.txt" % plot.beam)
         np.savetxt(fname, profile_h[k].T)
-        fname = dump_scores_folder + "/res_%s_profile_v.txt" % plot.beam
+        fname = os.path.join(bl.dump_scores_folder,
+                             f"res_%s_profile_v.txt" % plot.beam)
         np.savetxt(fname, profile_v[k].T)
-        fname = dump_scores_folder + "/res_%s_profile_e.txt" % plot.beam
+        fname = os.path.join(bl.dump_scores_folder,
+                             f"res_%s_profile_e.txt" % plot.beam)
         np.savetxt(fname, profile_e[k].T)
         e, y = np.loadtxt(fname, unpack=True)
         epeak.append(e[np.argmax(savgol_filter(y, 51, 3))])
@@ -426,62 +423,67 @@ def do_after_script(plots):
     out_str2 = chr(10).join(out_str2)
     print(out_str2)
     out_str1 += chr(10) + out_str2 + chr(10)
-    with open(dump_scores_folder + "/results.txt", 'w') as f:
+    with open(os.path.join(bl.dump_scores_folder, "results.txt"), 'w') as f:
         f.write(out_str1)
 
 #
 # main
 #
-global REPETITION
-REPETITION = 0
+def main():
 
-#
-# xrt beamline
-#
-bl = build_beamline(name="{beamline_name}")
+    #
+    # xrt beamline
+    #
+    bl = build_beamline(name="{beamline_name}")
+    
+    #
+    # dumps
+    #
+    bl.dump_beams_flag = {dump_beams_flag}
+    
+    bl.dump_scores_folder = os.path.join(bl.name, "scores")
+    os.makedirs(bl.dump_scores_folder, exist_ok=True)
+    
+    if bl.dump_beams_flag:
+        bl.dump_beams_folder = os.path.join(bl.name, "beams")
+        os.makedirs(bl.dump_beams_folder, exist_ok=True)
+        
+    #
+    # plots
+    #
+    if showIn3D:
+        bl.glow(scale=[4000, 5, 2000], centerAt='m1')
+        return
+    
+    screens_to_plot = {screens_to_plot}
+    limits = [None] * {n_screens_to_plot}
 
-#
-# prepare output folders (in the directory with bl.name)
-#
-global dump_scores_folder
-dump_scores_flag = 1
-dump_scores_folder = "%s/scores/" % bl.name
-os.makedirs(dump_scores_folder, exist_ok=True)
-
-global dump_beams_flag, dump_beams_folder
-dump_beams_flag = 1
-dump_beams_folder = "%s/beams/" % bl.name
-if dump_beams_flag: os.makedirs(dump_beams_folder, exist_ok=True)
-
-
-#
-# declare run_process() that makes the tracing
-#
-xrt.backends.raycing.run.run_process = run_process
-
-#
-# define plots
-#
-screens_to_plot = {screens_to_plot}
-sizes_in_um     = {sizes_in_um}
-
-plots = []
-for i in range(len(screens_to_plot)):
-    plots.append(make_plot(bl, screens_to_plot[i], sizes_in_um[i]))
-
-#
-# run
-#
-run_ray_tracing(plots=plots,
-                repeats={REPETITION},
-                pickleEvery=1,
-                updateEvery=1,
-                beamLine=bl,
-                afterScript=do_after_script,
-                afterScriptArgs=[plots])
+    plots = []
+    for i in range(len(screens_to_plot)):
+        plots.append(make_plot(bl, screens_to_plot[i], limits=limits[i], bins=1024, climits=None, cbins=256,))
 
 
 
+            
+    #
+    # declare run_process() that makes the tracing
+    #
+    xrt.backends.raycing.run.run_process = run_process
+        
+    #
+    # run
+    #
+    run_ray_tracing(beamLine=bl,
+                    plots=plots,
+                    repeats={REPETITION},
+                    threads=1,
+                    processes=1,
+                    afterScript=do_after_script,
+                    afterScriptArgs=[bl, plots])
+
+
+if __name__ in ["__main__", "builtins"]:
+    main()
 """
 
 
@@ -518,8 +520,8 @@ bl.sample_screen = Screen(
     )
 """
 
-    oo = XRTData(txt1, {"class_name":"Undulator", "name":"u17"})
-    oo.append(txt2, {"class_name":"Screen", "name":"sample_screen"})
+    oo = XRTData(txt1, {"class_name":"Undulator", "name":"u17", "use_for_plot":0})
+    oo.append(txt2, {"class_name":"Screen", "name":"sample_screen", "use_for_plot":1})
 
     a = QApplication(sys.argv)
     ow = OWRunner()

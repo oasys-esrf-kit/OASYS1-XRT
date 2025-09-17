@@ -59,8 +59,12 @@ class OWPlate(OWOpticalElement):
         pass
 
     def xrtcode_parameters(self):
+        if " " in self.oe_name:
+            QMessageBox.critical(self, "Error", "component names cannot have blanks: %s" % self.oe_name, QMessageBox.Ok)
+
         return {
             "class_name":"Plate",
+            "use_for_plot": False,
             "name":self.oe_name,
             "center":self.center,
             "pitch": self.pitch,
@@ -76,7 +80,6 @@ class OWPlate(OWOpticalElement):
         return \
 """
 from xrt.backends.raycing.oes import Plate
-from xrt.backends.raycing.materials import Material
 bl.{name} = Plate(
     bl,
     name='{name}',
