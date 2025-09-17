@@ -307,7 +307,7 @@ bl.{name} = Undulator(
         try:
             self.check_data()
 
-            self.send("XRTData", XRTData(component=self.get_xrt_code(), parameters=self.xrtcode_parameters()))
+            self.send("XRTData", XRTData(self.get_xrt_code(), self.xrtcode_parameters()))
 
         except Exception as e:
             QMessageBox.critical(self, "Error", str(e.args[0]), QMessageBox.Ok)

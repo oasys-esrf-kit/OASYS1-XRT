@@ -226,15 +226,14 @@ class OWRunner(widget.OWWidget):
         screens_to_plot = []
         for i in range(self.input_data.number_of_components()):
             txt_i, dict_i = self.input_data.component(i)
-            print(">>>>>>>>>>>>", i , dict_i["name"], dict_i["use_for_plot"])
             if dict_i["use_for_plot"]: screens_to_plot.append(dict_i["name"])
 
 
         code_parameters = {
             "beamline_name": self.beamline_name,
             "REPETITION": self.repetition,
-            "build_beamline_code": self.build_beamline_code(),
-            "run_process_code": self.run_process_code(),
+            "build_beamline_code": self.input_data.build_beamline_code(),
+            "run_process_code": self.input_data.run_process_code(),
             "screens_to_plot": screens_to_plot,
             "n_screens_to_plot": len(screens_to_plot),
             "dump_beams_flag": self.dump_beams_flag,
@@ -244,99 +243,6 @@ class OWRunner(widget.OWWidget):
         template_code = self.get_template_code()
         full_text_code = template_code.format_map(code_parameters)
         return full_text_code
-
-    def build_beamline_code(self):
-        indent = "    "
-        txt = ""
-        txt += "def build_beamline(name=''):\n"
-        txt += "\n"
-        txt += indent + "bl = BeamLine()\n"
-        txt += indent + "bl.name = name\n"
-        txt += "\n"
-
-        if self.input_data is None:
-            txt += indent + "## ERROR No XRTData available ##\n"
-            return txt
-
-        for i in range(self.input_data.number_of_components()):
-            txt_i, dict_i = self.input_data.component(i)
-            txt_i_indented = "\n".join(indent + line for line in txt_i.splitlines())
-
-            txt += "\n"
-            txt += indent + "#\n"
-            txt += indent + "# Component index: %d (%s)\n" % (i, dict_i["name"])
-            txt += indent + "#"
-            txt += txt_i_indented
-            txt += "\n"
-
-        txt += "\n"
-        txt += indent + "#\n"
-        txt += indent + "#\n"
-        txt += indent + "#\n"
-        txt += indent + "return bl\n"
-
-        return txt
-
-    def run_process_code(self):
-        indent = "    "
-        txt = ""
-        txt += "def run_process(bl):\n"
-        txt += "\n"
-        txt += indent + "import numpy as np\n"
-        txt += indent + "t0 = time.time()\n"
-        txt += "\n"
-        txt += indent + "beams_to_plot = dict()\n"
-
-        if self.input_data is None:
-            txt += indent + "## ERROR No XRTData available ##\n"
-            return txt
-
-        for i in range(self.input_data.number_of_components()):
-            txt_i, dict_i = self.input_data.component(i)
-
-            txt += "\n"
-            txt += indent + "#\n"
-            txt += indent + "# Component index: %d (%s: %s)\n" % (i, dict_i["name"], dict_i["class_name"],)
-            txt += indent + "#\n"
-            if dict_i["class_name"] == "Undulator":
-                txt += indent +  "beam = bl.%s.shine()\n" % dict_i["name"]
-                txt += indent +  'if bl.dump_beams_flag: dump_beam(bl, "%s", beam)\n' % dict_i["name"]
-            elif dict_i["class_name"] == "Screen":
-                txt += indent +  "beam_local = bl.%s.expose(beam)\n" % dict_i["name"]
-                if dict_i["use_for_plot"]:
-                    txt += indent +  "beams_to_plot['%s'] = beam_local\n" % dict_i["name"]
-                txt += indent +  'if bl.dump_beams_flag: dump_beam(bl, "%s", beam)\n' % dict_i["name"]
-            elif dict_i["class_name"] == "DoubleParaboloidLens":
-                txt += indent +  "beam, beam_local1, beam_local2 = bl.%s.multiple_refract(beam)\n" % dict_i["name"]
-                txt += indent +  'if bl.dump_beams_flag: dump_beam(bl, "%s", beam_local1)\n' % (dict_i["name"] + "_1")
-                txt += indent +  'if bl.dump_beams_flag: dump_beam(bl, "%s", beam_local2)\n' % (dict_i["name"] + "_2")
-            elif dict_i["class_name"] == "Plate":
-                txt += indent +  "beam, beam_local1, beam_local2 = bl.%s.double_refract(beam)\n" % dict_i["name"]
-                txt += indent +  'if bl.dump_beams_flag: dump_beam(bl, "%s", beam_local1)\n' % (dict_i["name"] + "_1")
-                txt += indent +  'if bl.dump_beams_flag: dump_beam(bl, "%s", beam_local2)\n' % (dict_i["name"] + "_2")
-            elif dict_i["class_name"] == "RectangularAperture":
-                txt += indent +  "beam_local = bl.%s.propagate(beam)\n" % dict_i["name"]
-                if dict_i["use_for_plot"]:
-                    txt += indent +  "beams_to_plot['%s'] = beam_local\n" % dict_i["name"]
-                txt += indent +  'if bl.dump_beams_flag: dump_beam(bl, "%s", beam_local)\n' % dict_i["name"]
-            elif dict_i["class_name"] == "ToroidMirrorDistorted":
-                txt += indent +  "beam, _ = bl.%s.reflect(beam)\n" % dict_i["name"]
-                txt += indent +  'if bl.dump_beams_flag: dump_beam(bl, "%s", beam)\n' % dict_i["name"]
-            else:
-                txt += indent +  "# <<<ERROR>>> not implemented component.\n"
-
-
-        txt += "\n"
-
-        txt += indent + "#\n"
-        txt += indent + "#\n"
-        txt += indent + "#\n"
-        txt += indent + 'dt = time.time() - t0\n'
-        txt += indent + 'print("Time needed to create source and trace system %.3f sec" % dt)\n'
-        txt += indent +  'if showIn3D: bl.prepare_flow()\n'
-        txt += indent + "return beams_to_plot\n"
-
-        return txt
 
     def get_template_code(self):
         return """
@@ -430,7 +336,6 @@ def do_after_script(bl, plots):
 # main
 #
 def main():
-
     #
     # xrt beamline
     #
@@ -461,9 +366,6 @@ def main():
     plots = []
     for i in range(len(screens_to_plot)):
         plots.append(make_plot(bl, screens_to_plot[i], limits=limits[i], bins=1024, climits=None, cbins=256,))
-
-
-
             
     #
     # declare run_process() that makes the tracing
